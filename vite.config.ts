@@ -1,0 +1,98 @@
+import inertia from '@inertiajs/vite';
+import { wayfinder } from '@laravel/vite-plugin-wayfinder';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import laravel from 'laravel-vite-plugin';
+import { bunny } from 'laravel-vite-plugin/fonts';
+import { defineConfig, lazyPlugins } from 'vite-plus';
+
+function react18Compat() {
+    return {
+        name: 'react-18-compat',
+        enforce: 'pre' as const,
+        transform(code: string, id: string) {
+            if (id.includes('@inertiajs') && id.includes('react')) {
+                return {
+                    code: code
+                        .replace(/import\s*\{\s*use\s*\}\s*from\s*["']react["']/g, 'import { useContext as use } from "react"')
+                        .replace(/\buse\s+as\s+use2\b/g, 'useContext as use2')
+                        .replace(/\buse\s+as\s+use3\b/g, 'useContext as use3'),
+                    map: null,
+                };
+            }
+        },
+    };
+}
+
+export default defineConfig({
+    plugins: lazyPlugins(() => [
+        react18Compat(),
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            refresh: true,
+            fonts: [
+                bunny('Instrument Sans', {
+                    weights: [400, 500, 600],
+                    optimizedFallbacks: false,
+                }),
+            ],
+        }),
+        inertia({
+            ssr: false,
+        }),
+        react(),
+        tailwindcss(),
+        wayfinder({
+            formVariants: true,
+        }),
+    ]),
+    optimizeDeps: {
+        exclude: ['@inertiajs/react'],
+    },
+    server: {
+        watch: {
+            ignored: [
+                '**/.agents/**',
+                '**/.claude/**',
+                '**/.cursor/**',
+                '**/.junie/**',
+                '**/vendor/**',
+            ],
+        },
+    },
+    lint: {
+        ignorePatterns: [
+            'vendor/**',
+            'node_modules/**',
+            'public/**',
+            'bootstrap/ssr/**',
+            'tailwind.config.js',
+            'resources/js/actions/**',
+            'resources/js/components/ui/*',
+            'resources/js/routes/**',
+            'resources/js/wayfinder/**',
+        ],
+        options: {
+            denyWarnings: true,
+            typeAware: true,
+        },
+    },
+    fmt: {
+        printWidth: 80,
+        tabWidth: 4,
+        singleQuote: true,
+        semi: true,
+        singleAttributePerLine: false,
+        htmlWhitespaceSensitivity: 'css',
+        ignorePatterns: [
+            '.github/**',
+            'composer.json',
+            'resources/js/components/ui/*',
+            'resources/views/mail/*',
+        ],
+        sortTailwindcss: {
+            functions: ['clsx', 'cn', 'cva'],
+            stylesheet: 'resources/css/app.css',
+        },
+    },
+});
