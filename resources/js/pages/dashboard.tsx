@@ -3,7 +3,11 @@ import NasaHealthHud from '@/components/nasa-health-hud';
 import { dashboard, logout } from '@/routes';
 import { LogOut, Database } from 'lucide-react';
 
-export default function Dashboard() {
+interface DashboardProps {
+    records?: any[];
+}
+
+export default function Dashboard({ records = [] }: DashboardProps) {
     return (
         <>
             <Head title="Mission Control Dashboard" />
@@ -34,7 +38,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Main HUD Component */}
-                <NasaHealthHud />
+                <NasaHealthHud initialData={{ records }} />
             </div>
         </>
     );
