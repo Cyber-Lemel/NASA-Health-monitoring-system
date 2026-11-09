@@ -48,6 +48,14 @@ export default function Astronaut3DModel({
     const isElevatedTemp = coreTemp > 37.8;
     const isHighHr = heartRate > 115;
 
+    // Keep live vitals updated inside requestAnimationFrame loop
+    const heartRateRef = useRef(heartRate);
+    const coreTempRef = useRef(coreTemp);
+    useEffect(() => {
+        heartRateRef.current = heartRate;
+        coreTempRef.current = coreTemp;
+    }, [heartRate, coreTemp]);
+
     useEffect(() => {
         const container = mountRef.current;
         if (!container) return;
@@ -453,9 +461,10 @@ export default function Astronaut3DModel({
                 modelGroupRef.current.position.y = Math.sin(elapsedTime * 1.5) * 0.12;
             }
 
-            // 2. Heart Pulsation (frequency driven by heartRate bpm)
+            // 2. Heart Pulsation (frequency dynamically driven by active astronaut's heartRate bpm)
             if (heartMeshRef.current) {
-                const bpmFreq = (heartRate / 60) * Math.PI * 2;
+                const currentHr = heartRateRef.current || 75;
+                const bpmFreq = (currentHr / 60) * Math.PI * 2;
                 const pulse = 1.0 + Math.pow(Math.sin(elapsedTime * bpmFreq), 4) * 0.28;
                 heartMeshRef.current.scale.set(0.55 * pulse, 0.55 * pulse, 0.55 * pulse);
 
@@ -594,12 +603,12 @@ export default function Astronaut3DModel({
 
             {/* Top Diagnostic Header inside 3D Canvas */}
             <div className="relative z-20 p-3 flex items-center justify-between pointer-events-auto">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#5cdbdf] animate-ping" />
-                    <span className="text-[11px] font-bold tracking-widest text-slate-200 uppercase">
-                        3D BIOMETRIC SKELETON
+                <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="w-2 h-2 rounded-full bg-[#5cdbdf] animate-ping shrink-0" />
+                    <span className="text-[11px] font-bold tracking-widest text-slate-200 uppercase truncate max-w-[200px]" title={astronautName}>
+                        3D SKELETON • {astronautName}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 border border-cyan-500/40 bg-cyan-950/60 text-cyan-300">
+                    <span className="text-[9px] px-1.5 py-0.5 border border-cyan-500/40 bg-cyan-950/60 text-cyan-300 shrink-0">
                         WEBGL 360°
                     </span>
                 </div>
@@ -689,8 +698,8 @@ export default function Astronaut3DModel({
                                 type="button"
                                 onClick={() => handleTargetSelect(tgt)}
                                 className={`px-1.5 py-0.5 border text-[9px] uppercase transition-colors cursor-pointer ${selectedTarget === tgt
-                                        ? 'border-[#5cdbdf] bg-[#5cdbdf]/20 text-[#5cdbdf] font-bold'
-                                        : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-white'
+                                    ? 'border-[#5cdbdf] bg-[#5cdbdf]/20 text-[#5cdbdf] font-bold'
+                                    : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-white'
                                     }`}
                             >
                                 {tgt}
