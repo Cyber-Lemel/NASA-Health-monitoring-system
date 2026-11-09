@@ -14,6 +14,7 @@ interface Astronaut3DModelProps {
 
 type ViewMode = 'skeleton' | 'thermal' | 'suit';
 type BodyTarget = 'full' | 'head' | 'chest' | 'spine' | 'arms' | 'legs';
+export type CharacterModel = 'piccolo' | 'luffy' | 'frieren' | 'astronaut';
 
 export default function Astronaut3DModel({
     heartRate,
@@ -31,11 +32,15 @@ export default function Astronaut3DModel({
     const thermalGroupRef = useRef<THREE.Group | null>(null);
     const skeletonGroupRef = useRef<THREE.Group | null>(null);
     const suitGroupRef = useRef<THREE.Group | null>(null);
+    const piccoloGroupRef = useRef<THREE.Group | null>(null);
+    const luffyGroupRef = useRef<THREE.Group | null>(null);
+    const frierenGroupRef = useRef<THREE.Group | null>(null);
     const scannerPlaneRef = useRef<THREE.Mesh | null>(null);
 
     // State for interactive UI controls
+    const [characterModel, setCharacterModel] = useState<CharacterModel>('piccolo');
     const [isAutoRotate, setIsAutoRotate] = useState(true);
-    const [viewMode, setViewMode] = useState<ViewMode>('skeleton');
+    const [viewMode, setViewMode] = useState<ViewMode>('suit');
     const [selectedTarget, setSelectedTarget] = useState<BodyTarget>('full');
 
     // Drag-to-rotate interaction refs
@@ -104,16 +109,27 @@ export default function Astronaut3DModel({
         scene.add(modelGroup);
         modelGroupRef.current = modelGroup;
 
-        // Subgroups for togglable view modes
+        // Subgroups for togglable view modes & character models
         const skeletonGroup = new THREE.Group();
         const thermalGroup = new THREE.Group();
         const suitGroup = new THREE.Group();
+        const piccoloGroup = new THREE.Group();
+        const luffyGroup = new THREE.Group();
+        const frierenGroup = new THREE.Group();
+
         modelGroup.add(skeletonGroup);
         modelGroup.add(thermalGroup);
         modelGroup.add(suitGroup);
+        modelGroup.add(piccoloGroup);
+        modelGroup.add(luffyGroup);
+        modelGroup.add(frierenGroup);
+
         skeletonGroupRef.current = skeletonGroup;
         thermalGroupRef.current = thermalGroup;
         suitGroupRef.current = suitGroup;
+        piccoloGroupRef.current = piccoloGroup;
+        luffyGroupRef.current = luffyGroup;
+        frierenGroupRef.current = frierenGroup;
 
         // --- Materials ---
         const boneMat = new THREE.MeshStandardMaterial({
@@ -379,6 +395,339 @@ export default function Astronaut3DModel({
         suitGroup.add(helmet);
 
         // ---------------------------------------------
+        // PROCEDURAL CHARACTER MODELS (Piccolo, Luffy, Frieren)
+        // ---------------------------------------------
+        // 1. PICCOLO (Dragon Ball Z Namekian)
+        const pSkinMat = new THREE.MeshStandardMaterial({ color: 0x38b000, roughness: 0.5, metalness: 0.1 });
+        const pPurpleMat = new THREE.MeshStandardMaterial({ color: 0x581c87, roughness: 0.6, metalness: 0.1 });
+        const pCapeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4, metalness: 0.1 });
+        const pBlueBeltMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.5, metalness: 0.2 });
+        const pPinkPatchMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.4, metalness: 0.1 });
+        const pBootMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.6, metalness: 0.1 });
+        const pRedWristMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.4, metalness: 0.2 });
+
+        // Piccolo Head & Turban
+        const pHeadGeo = new THREE.SphereGeometry(0.82, 18, 16);
+        pHeadGeo.scale(0.85, 1.05, 0.95);
+        const pHead = new THREE.Mesh(pHeadGeo, pSkinMat);
+        pHead.position.set(0, 3.6, 0);
+        piccoloGroup.add(pHead);
+
+        const pTurbanGeo = new THREE.CylinderGeometry(0.92, 0.96, 0.75, 18);
+        const pTurban = new THREE.Mesh(pTurbanGeo, pCapeMat);
+        pTurban.position.set(0, 4.05, 0);
+        piccoloGroup.add(pTurban);
+
+        const pDomeGeo = new THREE.SphereGeometry(0.88, 16, 14);
+        pDomeGeo.scale(1, 0.8, 1);
+        const pDome = new THREE.Mesh(pDomeGeo, pPurpleMat);
+        pDome.position.set(0, 4.35, 0);
+        piccoloGroup.add(pDome);
+
+        // Piccolo Ears
+        const pEarGeo = new THREE.ConeGeometry(0.2, 0.7, 8);
+        pEarGeo.rotateZ(Math.PI / 2);
+        const pLEar = new THREE.Mesh(pEarGeo, pSkinMat);
+        pLEar.position.set(0.9, 3.6, -0.1);
+        pLEar.rotation.set(0, -0.3, 0.4);
+        piccoloGroup.add(pLEar);
+        const pREar = new THREE.Mesh(pEarGeo, pSkinMat);
+        pREar.position.set(-0.9, 3.6, -0.1);
+        pREar.rotation.set(0, 0.3, -0.4);
+        piccoloGroup.add(pREar);
+
+        // Antennae
+        const pAntGeo = new THREE.CylinderGeometry(0.04, 0.05, 0.55, 8);
+        pAntGeo.translate(0, 0.25, 0);
+        pAntGeo.rotateX(Math.PI / 4);
+        const pLAnt = new THREE.Mesh(pAntGeo, pSkinMat);
+        pLAnt.position.set(0.22, 3.9, 0.7);
+        pLAnt.rotation.set(0.2, 0.15, -0.2);
+        piccoloGroup.add(pLAnt);
+        const pRAnt = new THREE.Mesh(pAntGeo, pSkinMat);
+        pRAnt.position.set(-0.22, 3.9, 0.7);
+        pRAnt.rotation.set(0.2, -0.15, 0.2);
+        piccoloGroup.add(pRAnt);
+
+        // Piccolo Torso & Cape
+        const pTorsoGeo = new THREE.CylinderGeometry(1.05, 0.85, 2.4, 16);
+        const pTorso = new THREE.Mesh(pTorsoGeo, pPurpleMat);
+        pTorso.position.set(0, 1.45, 0.05);
+        piccoloGroup.add(pTorso);
+
+        const pSashGeo = new THREE.CylinderGeometry(0.92, 0.94, 0.55, 16);
+        const pSash = new THREE.Mesh(pSashGeo, pBlueBeltMat);
+        pSash.position.set(0, 0.35, 0.05);
+        piccoloGroup.add(pSash);
+
+        const pCowlGeo = new THREE.TorusGeometry(1.15, 0.35, 10, 20);
+        pCowlGeo.rotateX(Math.PI / 2);
+        const pCowl = new THREE.Mesh(pCowlGeo, pCapeMat);
+        pCowl.position.set(0, 2.5, 0.1);
+        piccoloGroup.add(pCowl);
+
+        const pCapeGeo = new THREE.PlaneGeometry(2.5, 5.2, 8, 12);
+        pCapeGeo.rotateY(Math.PI);
+        const pCape = new THREE.Mesh(pCapeGeo, new THREE.MeshStandardMaterial({ color: 0xf1f5f9, side: THREE.DoubleSide }));
+        pCape.position.set(0, 0.4, -0.6);
+        piccoloGroup.add(pCape);
+
+        // Piccolo Arms & Pink Patches
+        const pArmGeo = new THREE.CylinderGeometry(0.26, 0.24, 1.5, 12);
+        const pLArm = new THREE.Mesh(pArmGeo, pSkinMat);
+        pLArm.position.set(1.5, 1.4, 0);
+        pLArm.rotation.set(0, 0, -0.15);
+        piccoloGroup.add(pLArm);
+
+        const pPatchGeo = new THREE.SphereGeometry(0.18, 10, 10);
+        pPatchGeo.scale(0.8, 1.4, 0.6);
+        const pLPatch = new THREE.Mesh(pPatchGeo, pPinkPatchMat);
+        pLPatch.position.set(1.65, 1.4, 0.12);
+        piccoloGroup.add(pLPatch);
+
+        const pLForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.2, 1.4, 12), pSkinMat);
+        pLForearm.position.set(1.7, -0.1, 0);
+        piccoloGroup.add(pLForearm);
+
+        const pLWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.35, 12), pRedWristMat);
+        pLWrist.position.set(1.7, -0.7, 0);
+        piccoloGroup.add(pLWrist);
+
+        const pRArm = new THREE.Mesh(pArmGeo, pSkinMat);
+        pRArm.position.set(-1.5, 1.4, 0);
+        pRArm.rotation.set(0, 0, 0.15);
+        piccoloGroup.add(pRArm);
+
+        const pRPatch = new THREE.Mesh(pPatchGeo, pPinkPatchMat);
+        pRPatch.position.set(-1.65, 1.4, 0.12);
+        piccoloGroup.add(pRPatch);
+
+        const pRForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.2, 1.4, 12), pSkinMat);
+        pRForearm.position.set(-1.7, -0.1, 0);
+        piccoloGroup.add(pRForearm);
+
+        const pRWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.35, 12), pRedWristMat);
+        pRWrist.position.set(-1.7, -0.7, 0);
+        piccoloGroup.add(pRWrist);
+
+        // Piccolo Baggy Pants & Pointed Shoes
+        const pLegGeo = new THREE.CylinderGeometry(0.48, 0.32, 2.4, 14);
+        const pLLeg = new THREE.Mesh(pLegGeo, pPurpleMat);
+        pLLeg.position.set(0.65, -1.2, 0);
+        piccoloGroup.add(pLLeg);
+        const pRLeg = new THREE.Mesh(pLegGeo, pPurpleMat);
+        pRLeg.position.set(-0.65, -1.2, 0);
+        piccoloGroup.add(pRLeg);
+
+        const pCalfGeo = new THREE.CylinderGeometry(0.42, 0.24, 1.8, 14);
+        const pLCalf = new THREE.Mesh(pCalfGeo, pPurpleMat);
+        pLCalf.position.set(0.65, -3.0, 0);
+        piccoloGroup.add(pLCalf);
+        const pRCalf = new THREE.Mesh(pCalfGeo, pPurpleMat);
+        pRCalf.position.set(-0.65, -3.0, 0);
+        piccoloGroup.add(pRCalf);
+
+        const pBootGeo = new THREE.ConeGeometry(0.32, 0.9, 10);
+        pBootGeo.rotateX(Math.PI / 2);
+        const pLBoot = new THREE.Mesh(pBootGeo, pBootMat);
+        pLBoot.position.set(0.65, -4.3, 0.2);
+        piccoloGroup.add(pLBoot);
+        const pRBoot = new THREE.Mesh(pBootGeo, pBootMat);
+        pRBoot.position.set(-0.65, -4.3, 0.2);
+        piccoloGroup.add(pRBoot);
+
+        // 2. MONKEY D. LUFFY (Straw Hat Captain)
+        const lSkinMat = new THREE.MeshStandardMaterial({ color: 0xfbd0a8, roughness: 0.6 });
+        const lStrawMat = new THREE.MeshStandardMaterial({ color: 0xca8a04, roughness: 0.8 });
+        const lRedMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5 });
+        const lDenimMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.6 });
+        const lWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7 });
+        const lSashMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+        const lHairMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.9 });
+        const lScarMat = new THREE.MeshBasicMaterial({ color: 0x991b1b });
+
+        const lHead = new THREE.Mesh(new THREE.SphereGeometry(0.8, 18, 16), lSkinMat);
+        lHead.position.set(0, 3.6, 0);
+        luffyGroup.add(lHead);
+
+        const lHair = new THREE.Mesh(new THREE.SphereGeometry(0.84, 14, 12), lHairMat);
+        lHair.position.set(0, 3.75, -0.05);
+        luffyGroup.add(lHair);
+
+        const lBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.65, 1.65, 0.08, 24), lStrawMat);
+        lBrim.position.set(0, 4.15, 0);
+        lBrim.rotation.set(-0.15, 0, 0);
+        luffyGroup.add(lBrim);
+
+        const lCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.95, 0.65, 20), lStrawMat);
+        lCrown.position.set(0, 4.45, -0.05);
+        lCrown.rotation.set(-0.15, 0, 0);
+        luffyGroup.add(lCrown);
+
+        const lRibbon = new THREE.Mesh(new THREE.CylinderGeometry(0.96, 0.97, 0.16, 20), lRedMat);
+        lRibbon.position.set(0, 4.25, -0.02);
+        lRibbon.rotation.set(-0.15, 0, 0);
+        luffyGroup.add(lRibbon);
+
+        // Luffy Torso & Chest X-Scar
+        const lTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.72, 2.3, 16), lSkinMat);
+        lTorso.position.set(0, 1.45, 0);
+        luffyGroup.add(lTorso);
+
+        const lLVest = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.76, 2.3, 12, 1, false, Math.PI * 0.15, Math.PI * 0.85), lRedMat);
+        lLVest.position.set(0, 1.45, 0);
+        luffyGroup.add(lLVest);
+
+        const lRVest = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.76, 2.3, 12, 1, false, Math.PI * 1.0, Math.PI * 0.85), lRedMat);
+        lRVest.position.set(0, 1.45, 0);
+        luffyGroup.add(lRVest);
+
+        const lScar1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.95, 0.05), lScarMat);
+        lScar1.rotation.set(0, 0, Math.PI / 4);
+        lScar1.position.set(0, 1.5, 0.82);
+        luffyGroup.add(lScar1);
+
+        const lScar2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.95, 0.05), lScarMat);
+        lScar2.rotation.set(0, 0, -Math.PI / 4);
+        lScar2.position.set(0, 1.5, 0.82);
+        luffyGroup.add(lScar2);
+
+        // Luffy Sash, Shorts & Bare Legs
+        const lSash = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.84, 0.55, 16), lSashMat);
+        lSash.position.set(0, 0.35, 0);
+        luffyGroup.add(lSash);
+
+        const lDrape = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 0.1), lSashMat);
+        lDrape.position.set(0.85, -0.4, 0.15);
+        lDrape.rotation.set(0, 0, -0.1);
+        luffyGroup.add(lDrape);
+
+        const lArmG = new THREE.CylinderGeometry(0.2, 0.17, 2.6, 10);
+        const lLArm = new THREE.Mesh(lArmG, lSkinMat);
+        lLArm.position.set(1.3, 0.8, 0);
+        luffyGroup.add(lLArm);
+        const lRArm = new THREE.Mesh(lArmG, lSkinMat);
+        lRArm.position.set(-1.3, 0.8, 0);
+        luffyGroup.add(lRArm);
+
+        const lShortG = new THREE.CylinderGeometry(0.42, 0.44, 1.7, 14);
+        const lLShort = new THREE.Mesh(lShortG, lDenimMat);
+        lLShort.position.set(0.55, -0.85, 0);
+        luffyGroup.add(lLShort);
+        const lRShort = new THREE.Mesh(lShortG, lDenimMat);
+        lRShort.position.set(-0.55, -0.85, 0);
+        luffyGroup.add(lRShort);
+
+        const lCuffG = new THREE.TorusGeometry(0.45, 0.12, 8, 16);
+        lCuffG.rotateX(Math.PI / 2);
+        const lLCuff = new THREE.Mesh(lCuffG, lWhiteMat);
+        lLCuff.position.set(0.55, -1.7, 0);
+        luffyGroup.add(lLCuff);
+        const lRCuff = new THREE.Mesh(lCuffG, lWhiteMat);
+        lRCuff.position.set(-0.55, -1.7, 0);
+        luffyGroup.add(lRCuff);
+
+        const lLegG = new THREE.CylinderGeometry(0.22, 0.18, 2.4, 10);
+        const lLLeg = new THREE.Mesh(lLegG, lSkinMat);
+        lLLeg.position.set(0.55, -2.9, 0);
+        luffyGroup.add(lLLeg);
+        const lRLeg = new THREE.Mesh(lLegG, lSkinMat);
+        lRLeg.position.set(-0.55, -2.9, 0);
+        luffyGroup.add(lRLeg);
+
+        // 3. FRIEREN (Elven Mage)
+        const fSkinMat = new THREE.MeshStandardMaterial({ color: 0xfff1f2, roughness: 0.5 });
+        const fWhiteMat = new THREE.MeshStandardMaterial({ color: 0xfdfbf7, roughness: 0.4 });
+        const fGoldMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.3, metalness: 0.8 });
+        const fRubyMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x991b1b, emissiveIntensity: 0.7 });
+        const fHairMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 });
+        const fTightsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+        const fBootMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 });
+
+        const fHead = new THREE.Mesh(new THREE.SphereGeometry(0.75, 18, 16), fSkinMat);
+        fHead.position.set(0, 3.6, 0);
+        frierenGroup.add(fHead);
+
+        const fHair = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 14), fHairMat);
+        fHair.position.set(0, 3.75, -0.05);
+        frierenGroup.add(fHair);
+
+        const fTailG = new THREE.CylinderGeometry(0.12, 0.22, 2.8, 10);
+        const fLTail = new THREE.Mesh(fTailG, fHairMat);
+        fLTail.position.set(0.75, 2.4, -0.3);
+        fLTail.rotation.set(0.1, 0, -0.15);
+        frierenGroup.add(fLTail);
+        const fRTail = new THREE.Mesh(fTailG, fHairMat);
+        fRTail.position.set(-0.75, 2.4, -0.3);
+        fRTail.rotation.set(0.1, 0, 0.15);
+        frierenGroup.add(fRTail);
+
+        const fEarG = new THREE.ConeGeometry(0.16, 0.75, 8);
+        fEarG.rotateZ(Math.PI / 2);
+        const fLEar = new THREE.Mesh(fEarG, fSkinMat);
+        fLEar.position.set(0.8, 3.6, -0.08);
+        fLEar.rotation.set(0, -0.2, 0.25);
+        frierenGroup.add(fLEar);
+        const fREar = new THREE.Mesh(fEarG, fSkinMat);
+        fREar.position.set(-0.8, 3.6, -0.08);
+        fREar.rotation.set(0, 0.2, -0.25);
+        frierenGroup.add(fREar);
+
+        const fCapelet = new THREE.Mesh(new THREE.ConeGeometry(1.4, 1.2, 18, 1, true), fWhiteMat);
+        fCapelet.position.set(0, 2.4, 0);
+        frierenGroup.add(fCapelet);
+
+        const fTrimG = new THREE.TorusGeometry(1.35, 0.05, 8, 20);
+        fTrimG.rotateX(Math.PI / 2);
+        const fTrim = new THREE.Mesh(fTrimG, fGoldMat);
+        fTrim.position.set(0, 1.8, 0);
+        frierenGroup.add(fTrim);
+
+        const fBrooch = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), fRubyMat);
+        fBrooch.position.set(0, 2.3, 0.8);
+        frierenGroup.add(fBrooch);
+
+        const fSkirt = new THREE.Mesh(new THREE.ConeGeometry(1.5, 1.6, 18, 1, true), fWhiteMat);
+        fSkirt.position.set(0, 0.6, 0);
+        frierenGroup.add(fSkirt);
+
+        const fLegG = new THREE.CylinderGeometry(0.24, 0.2, 2.2, 10);
+        const fLLeg = new THREE.Mesh(fLegG, fTightsMat);
+        fLLeg.position.set(0.45, -1.3, 0);
+        frierenGroup.add(fLLeg);
+        const fRLeg = new THREE.Mesh(fLegG, fTightsMat);
+        fRLeg.position.set(-0.45, -1.3, 0);
+        frierenGroup.add(fRLeg);
+
+        const fBootG = new THREE.CylinderGeometry(0.28, 0.26, 2.0, 10);
+        const fLBoot = new THREE.Mesh(fBootG, fBootMat);
+        fLBoot.position.set(0.45, -3.2, 0);
+        frierenGroup.add(fLBoot);
+        const fRBoot = new THREE.Mesh(fBootG, fBootMat);
+        fRBoot.position.set(-0.45, -3.2, 0);
+        frierenGroup.add(fRBoot);
+
+        // Frieren Crescent Staff
+        const fStaff = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 7.2, 12), new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.5 }));
+        fStaff.position.set(-1.6, 0.8, 0.4);
+        frierenGroup.add(fStaff);
+
+        const fCrescent = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.09, 8, 20, Math.PI * 1.5), fGoldMat);
+        fCrescent.position.set(-1.6, 4.2, 0.4);
+        fCrescent.rotation.set(0, 0, Math.PI / 4);
+        frierenGroup.add(fCrescent);
+
+        const fOrb = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), fRubyMat);
+        fOrb.position.set(-1.6, 4.2, 0.4);
+        frierenGroup.add(fOrb);
+
+        // Initial character model visibility (Piccolo default)
+        suitGroup.visible = false;
+        piccoloGroup.visible = true;
+        luffyGroup.visible = false;
+        frierenGroup.visible = false;
+
+        // ---------------------------------------------
         // HOLOGRAPHIC SCANNER & FLOOR TELEMETRY RINGS
         // ---------------------------------------------
         // Floor concentric rings
@@ -510,24 +859,28 @@ export default function Astronaut3DModel({
         };
     }, []);
 
-    // Update visibility based on ViewMode
+    // Update visibility based on ViewMode & CharacterModel
     useEffect(() => {
         if (!skeletonGroupRef.current || !thermalGroupRef.current || !suitGroupRef.current) return;
 
-        if (viewMode === 'skeleton') {
-            skeletonGroupRef.current.visible = true;
-            thermalGroupRef.current.visible = false;
-            suitGroupRef.current.visible = false;
-        } else if (viewMode === 'thermal') {
-            skeletonGroupRef.current.visible = true;
-            thermalGroupRef.current.visible = true;
-            suitGroupRef.current.visible = false;
-        } else if (viewMode === 'suit') {
-            skeletonGroupRef.current.visible = true;
-            thermalGroupRef.current.visible = false;
-            suitGroupRef.current.visible = true;
+        const isCharacterOutfitVisible = viewMode === 'suit';
+        const isSkeletonVisible = viewMode === 'skeleton' || viewMode === 'thermal';
+
+        skeletonGroupRef.current.visible = isSkeletonVisible;
+        thermalGroupRef.current.visible = viewMode === 'thermal';
+
+        // Toggle character models
+        suitGroupRef.current.visible = isCharacterOutfitVisible && characterModel === 'astronaut';
+        if (piccoloGroupRef.current) {
+            piccoloGroupRef.current.visible = isCharacterOutfitVisible && characterModel === 'piccolo';
         }
-    }, [viewMode]);
+        if (luffyGroupRef.current) {
+            luffyGroupRef.current.visible = isCharacterOutfitVisible && characterModel === 'luffy';
+        }
+        if (frierenGroupRef.current) {
+            frierenGroupRef.current.visible = isCharacterOutfitVisible && characterModel === 'frieren';
+        }
+    }, [viewMode, characterModel]);
 
     // Handle mouse drag to rotate 3D canvas
     const handleMouseDown = (e: React.MouseEvent) => {

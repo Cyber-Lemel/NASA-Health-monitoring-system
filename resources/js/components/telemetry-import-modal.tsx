@@ -29,9 +29,9 @@ import { toast } from 'sonner';
 interface TelemetryImportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onApplyToHud: (data: ParsedImportPayload) => void;
+    onApplyToHud?: (data: ParsedImportPayload) => void;
     onSaveToDatabase?: (data: ParsedImportPayload) => Promise<boolean | void>;
-    activeAstronaut: AstronautFullData;
+    activeAstronaut?: AstronautFullData;
 }
 
 export default function TelemetryImportModal({
@@ -112,17 +112,24 @@ export default function TelemetryImportModal({
 
     const handleApply = () => {
         if (!parsedData) return;
-        onApplyToHud(parsedData);
-        toast.success(`Active HUD updated with ${parsedData.name}'s telemetry`);
+        if (onApplyToHud) {
+            onApplyToHud(parsedData);
+            toast.success(`Active HUD updated with ${parsedData.name}'s telemetry`);
+        }
         onClose();
     };
 
-    const handleSaveDb = async () => {
+    const handleSaveDb = async (saveAll: boolean = true) => {
         if (!parsedData || !onSaveToDatabase) return;
         setIsSavingDb(true);
         try {
-            await onSaveToDatabase(parsedData);
-            toast.success(`Astronaut ${parsedData.name} saved to database`);
+            const dataToSave = saveAll
+                ? parsedData
+                : { ...parsedData, detectedRows: undefined };
+            await onSaveToDatabase(dataToSave);
+            const count = saveAll && parsedData.detectedRows?.length ? parsedData.detectedRows.length : 1;
+            toast.success(`Saved ${count} astronaut record(s) directly to database`);
+            onClose();
         } catch (e: any) {
             toast.error(e.message || 'Failed to save to database');
         } finally {
@@ -132,7 +139,9 @@ export default function TelemetryImportModal({
 
     const handleApplyAndSave = async () => {
         if (!parsedData) return;
-        onApplyToHud(parsedData);
+        if (onApplyToHud) {
+            onApplyToHud(parsedData);
+        }
         if (onSaveToDatabase) {
             setIsSavingDb(true);
             try {
@@ -342,6 +351,39 @@ export default function TelemetryImportModal({
                                 </div>
                             )}
 
+                            {/* Bulk detected rows alert */}
+                            {parsedData.detectedRows && parsedData.detectedRows.length > 1 && (
+                                <div className="border border-emerald-500/60 bg-emerald-950/40 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 border border-emerald-500/50 bg-emerald-900/40 text-emerald-400">
+                                            <FileSpreadsheet className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="text-white font-bold text-xs tracking-wider flex items-center gap-2">
+                                                <span>BULK DATASET DETECTED</span>
+                                                <span className="px-2 py-0.5 bg-emerald-500 text-black font-extrabold text-[10px]">
+                                                    {parsedData.detectedRows.length} RECORDS
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-emerald-300 mt-0.5">
+                                                Spreadsheet contains telemetry for {parsedData.detectedRows.length} crew members. You can bulk-import all records directly into MySQL database in one batch.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {onSaveToDatabase && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSaveDb(true)}
+                                            disabled={isSavingDb}
+                                            className="shrink-0 flex items-center gap-2 px-4 py-2 border border-emerald-400 bg-emerald-500 text-[#030b14] font-bold text-xs hover:bg-emerald-400 hover:brightness-110 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.4)] disabled:opacity-50"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            {isSavingDb ? 'SAVING ALL...' : `IMPORT ALL ${parsedData.detectedRows.length} RECORDS`}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Section 1: Astronaut Bio & Identity */}
                             <div className="space-y-2">
                                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-[#1a4b6c]/40 pb-1 flex items-center gap-2">
@@ -512,7 +554,109 @@ export default function TelemetryImportModal({
                                 </div>
                             </div>
 
-                            {/* Section 4: Condition Notes */}
+                            {/* Section 4: Bioastronautics & HRP Dataset Fields */}
+                            <div className="space-y-2">
+                                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-[#1a4b6c]/40 pb-1">
+                                    4. HRP BIOASTRONAUTICS & CLINICAL DATASET PARAMETERS
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">MISSION DURATION (DAYS)</label>
+                                        <input
+                                            type="number"
+                                            value={parsedData.missionDurationDays || 180}
+                                            onChange={(e) => handleFieldChange('missionDurationDays', parseInt(e.target.value) || 180)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">BONE DENSITY LOSS (%)</label>
+                                        <input
+                                            type="text"
+                                            value={parsedData.boneDensityLoss || '-3.0%'}
+                                            onChange={(e) => handleFieldChange('boneDensityLoss', e.target.value)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">MUSCLE MASS LOSS (%)</label>
+                                        <input
+                                            type="text"
+                                            value={parsedData.muscleMassLoss || '2.5%'}
+                                            onChange={(e) => handleFieldChange('muscleMassLoss', e.target.value)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">MISSIONS COUNT</label>
+                                        <input
+                                            type="number"
+                                            value={parsedData.noOfMission || 1}
+                                            onChange={(e) => handleFieldChange('noOfMission', parseInt(e.target.value) || 1)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">RADIATION EXPOSURE (MSV)</label>
+                                        <input
+                                            type="number"
+                                            value={parsedData.radiationExposure || 95}
+                                            onChange={(e) => handleFieldChange('radiationExposure', parseInt(e.target.value) || 95)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">CARDIOVASCULAR RISK (1-10)</label>
+                                        <input
+                                            type="number"
+                                            value={parsedData.cardioRisk || 7}
+                                            onChange={(e) => handleFieldChange('cardioRisk', parseInt(e.target.value) || 7)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">IMMUNE SUPPRESSION (1-10)</label>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={parsedData.immuneSuppression || 8.0}
+                                            onChange={(e) => handleFieldChange('immuneSuppression', parseFloat(e.target.value) || 8.0)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">PSYCHOLOGICAL SCORE (1-10)</label>
+                                        <input
+                                            type="number"
+                                            value={parsedData.psychScore || 5}
+                                            onChange={(e) => handleFieldChange('psychScore', parseInt(e.target.value) || 5)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">VISION CHANGE STATUS</label>
+                                        <input
+                                            type="text"
+                                            value={parsedData.vision || 'Clear'}
+                                            onChange={(e) => handleFieldChange('vision', e.target.value)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-400 block mb-1">COUNTERMEASURES USED</label>
+                                        <input
+                                            type="text"
+                                            value={parsedData.countermeasures || 'Exercise, Calcium Supplements'}
+                                            onChange={(e) => handleFieldChange('countermeasures', e.target.value)}
+                                            className="w-full bg-[#0a1f2e] border border-[#1a4b6c] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#5cdbdf]"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 5: Condition Notes */}
                             <div>
                                 <label className="text-[10px] text-slate-400 block mb-1">DETECTED CONDITION / CLINICAL NOTES</label>
                                 <input
@@ -538,34 +682,42 @@ export default function TelemetryImportModal({
 
                     {parsedData && (
                         <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={handleApply}
-                                className="flex items-center gap-2 border border-[#5cdbdf] text-[#5cdbdf] hover:bg-[#5cdbdf]/15 px-4 py-2 text-xs transition-colors cursor-pointer"
-                            >
-                                <ArrowRight className="w-4 h-4" /> APPLY TO ACTIVE HUD
-                            </button>
+                            {onApplyToHud && (
+                                <button
+                                    type="button"
+                                    onClick={handleApply}
+                                    className="flex items-center gap-2 border border-[#5cdbdf] text-[#5cdbdf] hover:bg-[#5cdbdf]/15 px-4 py-2 text-xs transition-colors cursor-pointer"
+                                >
+                                    <ArrowRight className="w-4 h-4" /> APPLY TO ACTIVE HUD
+                                </button>
+                            )}
 
                             {onSaveToDatabase && (
                                 <button
                                     type="button"
-                                    onClick={handleSaveDb}
+                                    onClick={() => handleSaveDb(Boolean(parsedData.detectedRows && parsedData.detectedRows.length > 1))}
                                     disabled={isSavingDb}
                                     className="flex items-center gap-2 border border-emerald-500/60 bg-emerald-950/40 text-emerald-400 hover:bg-emerald-900/50 px-4 py-2 text-xs transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                     <Check className="w-4 h-4" />
-                                    {isSavingDb ? 'SAVING...' : 'SAVE TO DATABASE'}
+                                    {isSavingDb
+                                        ? 'SAVING TO DATABASE...'
+                                        : parsedData.detectedRows && parsedData.detectedRows.length > 1
+                                        ? `SAVE ALL (${parsedData.detectedRows.length}) TO DATABASE`
+                                        : 'SAVE TO DATABASE'}
                                 </button>
                             )}
 
-                            <button
-                                type="button"
-                                onClick={handleApplyAndSave}
-                                disabled={isSavingDb}
-                                className="flex items-center gap-2 bg-[#5cdbdf] text-[#030b14] font-bold hover:brightness-110 px-5 py-2 text-xs transition-all cursor-pointer shadow-[0_0_15px_rgba(92,219,223,0.4)]"
-                            >
-                                <CheckCircle2 className="w-4 h-4" /> INJECT & SAVE BOTH
-                            </button>
+                            {onApplyToHud && onSaveToDatabase && (
+                                <button
+                                    type="button"
+                                    onClick={handleApplyAndSave}
+                                    disabled={isSavingDb}
+                                    className="flex items-center gap-2 bg-[#5cdbdf] text-[#030b14] font-bold hover:brightness-110 px-5 py-2 text-xs transition-all cursor-pointer shadow-[0_0_15px_rgba(92,219,223,0.4)]"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" /> INJECT & SAVE BOTH
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

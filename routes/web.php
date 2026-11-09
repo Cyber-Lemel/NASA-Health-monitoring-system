@@ -88,9 +88,13 @@ Route::post('/api/ai/chat', [App\Http\Controllers\ChatbotController::class, 'cha
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dataset', [DatasetController::class, 'index'])->name('dataset.index');
     Route::post('/api/dataset/import', [DatasetController::class, 'import'])->name('dataset.import');
+    Route::post('/api/dataset/records', [DatasetController::class, 'store'])->name('dataset.store');
+    Route::put('/api/dataset/records/{astronaut}', [DatasetController::class, 'update'])->name('dataset.update');
+    Route::delete('/api/dataset/records/{astronaut}', [DatasetController::class, 'destroy'])->name('dataset.destroy');
+    Route::post('/api/dataset/records/bulk-delete', [DatasetController::class, 'bulkDestroy'])->name('dataset.bulkDestroy');
 
     Route::get('dashboard', function () {
-        $records = \App\Models\DatasetRecord::all();
+        $records = \App\Models\DatasetRecord::orderBy('Astronaut', 'asc')->get();
         return inertia('dashboard', [
             'records' => $records,
         ]);

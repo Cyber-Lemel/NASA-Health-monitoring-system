@@ -6,12 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class DatasetRecord extends Model
 {
-    // 1. Point directly to the exact table name you created in phpMyAdmin
+    // Point directly to the exact table name in MySQL
     protected $table = 'dataset_records';
 
-    // 2. Disable Laravel's automatic timestamps to prevent SQL errors
+    // The primary key in MySQL is 'Astronaut' (int)
+    protected $primaryKey = 'Astronaut';
+
+    public $incrementing = false;
+
+    protected $keyType = 'int';
+
+    // Disable automatic created_at / updated_at
     public $timestamps = false;
 
-    // 3. Allow columns to be queried and assigned
+    // Allow all columns to be mass assigned
     protected $guarded = [];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Auto-assign sequential integer ID if missing or non-numeric
+            if (empty($model->Astronaut) || !is_numeric($model->Astronaut)) {
+                $maxId = (int) (static::max('Astronaut') ?? 0);
+                $model->Astronaut = $maxId + 1;
+            }
+        });
+    }
 }

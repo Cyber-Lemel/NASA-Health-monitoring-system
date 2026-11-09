@@ -175,7 +175,10 @@ export default function CrewSwitcherModal({
                             const name = astronaut.Name || astronaut.name || `Astronaut ${cid}`;
                             const country = astronaut.Country || astronaut.country || 'NASA / International';
                             const role = astronaut.Role || astronaut.role || 'Astronaut Specialist';
-                            const duration = astronaut['Mission_duration(Days)'] || 180;
+                            const rawAge = astronaut.Age_at_mission_start ?? (astronaut as any).age ?? (astronaut as any).Age;
+                            const age = (rawAge !== undefined && rawAge !== null && !isNaN(Number(rawAge))) ? Number(rawAge) : 40;
+                            const rawDuration = astronaut['Mission_duration(Days)'] ?? (astronaut as any).duration ?? (astronaut as any).missionDurationDays ?? (astronaut as any).Mission_duration;
+                            const duration = (rawDuration !== undefined && rawDuration !== null && !isNaN(Number(rawDuration))) ? Number(rawDuration) : 180;
                             const boneLoss = astronaut.Bone_Density_Loss || '-3.0%';
                             const isSelected = String(activeAstronautId) === cid;
 
@@ -219,6 +222,8 @@ export default function CrewSwitcherModal({
                                                 <span className="text-slate-300">{role}</span>
                                                 <span>•</span>
                                                 <span className="text-slate-400">{country}</span>
+                                                <span>•</span>
+                                                <span className="text-amber-400 font-bold">{age} YRS</span>
                                             </div>
                                         </div>
                                     </div>
@@ -226,6 +231,7 @@ export default function CrewSwitcherModal({
                                     {/* Right: Metrics & Selection */}
                                     <div className="flex items-center gap-4 text-right shrink-0">
                                         <div className="hidden sm:block text-[10px] text-slate-400 font-mono">
+                                            <div>AGE: <strong className="text-amber-400">{age} yrs</strong></div>
                                             <div>FLIGHT: <strong className="text-sky-300">{duration}d</strong></div>
                                             <div>BMD: <strong className="text-rose-400">{boneLoss}</strong></div>
                                         </div>

@@ -79,36 +79,134 @@ export async function parseExcelOrCsvFile(file: File): Promise<ParsedImportPaylo
         targetRow = kvObj;
     }
 
-    // Fuzzy field matching
-    const findValue = (regex: RegExp) => {
-        for (const [key, val] of Object.entries(targetRow)) {
-            if (regex.test(key) && val !== undefined && val !== '') {
-                return val;
+    // Clean key normalizer: removes all spaces, underscores, dashes, parens, percentages
+    const normalizeKey = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const KEY_ALIASES = {
+        astronautId: ['astronaut', 'astronautid', 'crewid', 'id', 'code', 'memberid'],
+        name: ['name', 'fullname', 'astronautname', 'crewname', 'crew', 'subjectname', 'subject'],
+        role: ['role', 'position', 'assignment', 'station'],
+        mission: ['mission', 'flight', 'missionname'],
+        age: ['ageatmissionstart', 'ageatmission', 'launchage', 'age', 'ageatlaunch', 'ageyears', 'astronautage'],
+        gender: ['gender', 'sex'],
+        country: ['country', 'nationality', 'agency', 'nation', 'affiliation'],
+        evaStatus: ['eva', 'evastatus', 'status', 'operationalstatus'],
+        missionDurationDays: ['missiondurationdays', 'missionduration', 'durationdays', 'duration', 'flightduration', 'flightdurationdays', 'daysinspace', 'missiondays', 'days'],
+        noOfMission: ['noofmission', 'noofmissions', 'numberofmissions', 'numberofmission', 'missions', 'missioncount', 'flightcount'],
+        boneDensityLoss: ['bonedensityloss', 'bonedensity', 'boneloss', 'bmdloss', 'bmd'],
+        muscleMassLoss: ['musclemassloss', 'musclemass', 'muscleloss', 'muscle'],
+        radiationExposure: ['radiationexposure', 'radiation', 'radexposure', 'msv'],
+        cardioRisk: ['cardiovascularriskscore', 'cardiovascularrisk', 'cardioriskscore', 'cardiorisk', 'cardiovascular', 'cardio'],
+        immuneSuppression: ['immuneresponsesuppression', 'immunesuppression', 'immuneresponse', 'immune'],
+        psychScore: ['psychologicalimpactscore', 'psychologicalimpact', 'psychimpact', 'psychological', 'psychscore', 'psych'],
+        vision: ['visionchange', 'vision', 'eyesight', 'visualacuity'],
+        countermeasures: ['countermeasuresused', 'countermeasures', 'protocol', 'countermeasure'],
+        heartRate: ['heartrate', 'heartratebpm', 'hr', 'pulse', 'ecg', 'bpm'],
+        spO2: ['spo2', 'spo2pct', 'oxygensat', 'bloodoxygen', 'pulseox', 'oxygen'],
+        coreTemp: ['coretemperature', 'coretemp', 'temp', 'temperature', 'bodytemp'],
+        respiration: ['respiration', 'respirationbpm', 'resp', 'breathing'],
+        hydration: ['hydration', 'hydrationpct', 'water', 'fluid'],
+        suitPressure: ['suitpressure', 'suitpressurepsi', 'pressure', 'psi'],
+        o2Level: ['o2reserve', 'o2level', 'suito2', 'o2', 'oxygenlevel'],
+        radiation: ['radiationstatus', 'radiation', 'rads', 'exposure'],
+        battery: ['battery', 'batterypct', 'power', 'suitbattery'],
+        conditionNote: ['alert', 'condition', 'notes', 'diagnostic', 'diagnosis'],
+    };
+
+    // Helper to find value from record using exact or fuzzy normalized alias matching
+    const findInObj = (obj: Record<string, any>, aliases: string[]) => {
+        if (!obj) return undefined;
+        // 1. Direct or exact normalized match
+        for (const [key, val] of Object.entries(obj)) {
+            if (val !== undefined && val !== null && val !== '') {
+                const cleanK = normalizeKey(key);
+                if (aliases.includes(cleanK)) {
+                    return val;
+                }
+            }
+        }
+        // 2. Substring matching check (e.g. "duration" in "flight_duration_days")
+        for (const [key, val] of Object.entries(obj)) {
+            if (val !== undefined && val !== null && val !== '') {
+                const cleanK = normalizeKey(key);
+                if (aliases.some((a) => cleanK.includes(a) || a.includes(cleanK))) {
+                    return val;
+                }
             }
         }
         return undefined;
     };
 
-    const astronautId = String(findValue(/^(astronaut|crew\s*id|id|code)$/i) || '').trim() || undefined;
-    const name = String(findValue(/^(name|full\s*name|astronaut\s*name|crew)$/i) || '').trim() || undefined;
-    const role = String(findValue(/^(role|position|assignment)$/i) || '').trim() || undefined;
-    const mission = String(findValue(/^(mission|flight)$/i) || '').trim() || undefined;
-    const age = cleanNum(findValue(/^(age|launch\s*age|age\s*at\s*mission\s*start)$/i));
-    const gender = String(findValue(/^(gender|sex)$/i) || '').trim() || undefined;
-    const country = String(findValue(/^(country|nationality|agency)$/i) || '').trim() || undefined;
-    const evaStatus = String(findValue(/^(eva|eva\s*status|status)$/i) || '').trim() || undefined;
+    const astronautId = String(findInObj(targetRow, KEY_ALIASES.astronautId) || '').trim() || undefined;
+    const name = String(findInObj(targetRow, KEY_ALIASES.name) || '').trim() || undefined;
+    const role = String(findInObj(targetRow, KEY_ALIASES.role) || '').trim() || undefined;
+    const mission = String(findInObj(targetRow, KEY_ALIASES.mission) || '').trim() || undefined;
+    const age = cleanNum(findInObj(targetRow, KEY_ALIASES.age));
+    const gender = String(findInObj(targetRow, KEY_ALIASES.gender) || '').trim() || undefined;
+    const country = String(findInObj(targetRow, KEY_ALIASES.country) || '').trim() || undefined;
+    const evaStatus = String(findInObj(targetRow, KEY_ALIASES.evaStatus) || '').trim() || undefined;
 
-    const heartRate = cleanNum(findValue(/(heart\s*rate|hr|pulse|ecg|bpm)/i));
-    const spO2 = cleanNum(findValue(/(spo2|oxygen\s*sat|blood\s*oxygen|pulse\s*ox)/i));
-    const coreTemp = cleanNum(findValue(/(temp|core\s*temp|temperature|body\s*temp)/i));
-    const respiration = cleanNum(findValue(/(resp|respiration|breathing)/i));
-    const hydration = cleanNum(findValue(/(hydration|water|fluid)/i));
+    // Bioastronautics & HRP Dataset fields
+    const missionDurationDays = cleanNum(findInObj(targetRow, KEY_ALIASES.missionDurationDays));
+    const noOfMission = cleanNum(findInObj(targetRow, KEY_ALIASES.noOfMission));
+    const boneDensityLoss = findInObj(targetRow, KEY_ALIASES.boneDensityLoss);
+    const muscleMassLoss = findInObj(targetRow, KEY_ALIASES.muscleMassLoss);
+    const radiationExposure = cleanNum(findInObj(targetRow, KEY_ALIASES.radiationExposure));
+    const cardioRisk = cleanNum(findInObj(targetRow, KEY_ALIASES.cardioRisk));
+    const immuneSuppression = cleanNum(findInObj(targetRow, KEY_ALIASES.immuneSuppression));
+    const psychScore = cleanNum(findInObj(targetRow, KEY_ALIASES.psychScore));
+    const vision = String(findInObj(targetRow, KEY_ALIASES.vision) || '').trim() || undefined;
+    const countermeasures = String(findInObj(targetRow, KEY_ALIASES.countermeasures) || '').trim() || undefined;
 
-    const suitPressure = cleanNum(findValue(/(suit\s*pressure|pressure|psi)/i));
-    const o2Level = cleanNum(findValue(/(o2\s*reserve|o2\s*level|suit\s*o2)/i));
-    const radiation = String(findValue(/(radiation|rads|exposure)/i) || '').trim() || undefined;
-    const battery = cleanNum(findValue(/(battery|power|suit\s*battery)/i));
-    const conditionNote = String(findValue(/(alert|condition|notes|diagnostic)/i) || '').trim() || undefined;
+    const heartRate = cleanNum(findInObj(targetRow, KEY_ALIASES.heartRate));
+    const spO2 = cleanNum(findInObj(targetRow, KEY_ALIASES.spO2));
+    const coreTemp = cleanNum(findInObj(targetRow, KEY_ALIASES.coreTemp));
+    const respiration = cleanNum(findInObj(targetRow, KEY_ALIASES.respiration));
+    const hydration = cleanNum(findInObj(targetRow, KEY_ALIASES.hydration));
+
+    const suitPressure = cleanNum(findInObj(targetRow, KEY_ALIASES.suitPressure));
+    const o2Level = cleanNum(findInObj(targetRow, KEY_ALIASES.o2Level));
+    const radiation = String(findInObj(targetRow, KEY_ALIASES.radiation) || '').trim() || undefined;
+    const battery = cleanNum(findInObj(targetRow, KEY_ALIASES.battery));
+    const conditionNote = String(findInObj(targetRow, KEY_ALIASES.conditionNote) || '').trim() || undefined;
+
+    // Normalize each row so both raw and canonical database keys are available 100%
+    const normalizedRows = (dataRows.length > 0 ? dataRows : [targetRow]).map((r, idx) => {
+        const rowId = findInObj(r, KEY_ALIASES.astronautId);
+        const rowName = findInObj(r, KEY_ALIASES.name);
+        const rowAge = cleanNum(findInObj(r, KEY_ALIASES.age));
+        const rowGender = findInObj(r, KEY_ALIASES.gender);
+        const rowCountry = findInObj(r, KEY_ALIASES.country);
+        const rowDuration = cleanNum(findInObj(r, KEY_ALIASES.missionDurationDays));
+        const rowNoMission = cleanNum(findInObj(r, KEY_ALIASES.noOfMission));
+        const rowBone = findInObj(r, KEY_ALIASES.boneDensityLoss);
+        const rowMuscle = findInObj(r, KEY_ALIASES.muscleMassLoss);
+        const rowRadiation = cleanNum(findInObj(r, KEY_ALIASES.radiationExposure));
+        const rowCardio = cleanNum(findInObj(r, KEY_ALIASES.cardioRisk));
+        const rowImmune = cleanNum(findInObj(r, KEY_ALIASES.immuneSuppression));
+        const rowPsych = cleanNum(findInObj(r, KEY_ALIASES.psychScore));
+        const rowVision = findInObj(r, KEY_ALIASES.vision);
+        const rowCountermeasures = findInObj(r, KEY_ALIASES.countermeasures);
+
+        return {
+            ...r,
+            Astronaut: rowId !== undefined ? rowId : (r.Astronaut ?? (idx + 1)),
+            Name: rowName !== undefined ? String(rowName).trim() : (r.Name ?? ('Astronaut_' + (idx + 1))),
+            Age_at_mission_start: rowAge !== undefined ? rowAge : (cleanNum(r.Age_at_mission_start) ?? 40),
+            Gender: rowGender !== undefined ? String(rowGender).trim() : (r.Gender ?? 'Not Specified'),
+            Country: rowCountry !== undefined ? String(rowCountry).trim() : (r.Country ?? 'NASA / International'),
+            'Mission_duration(Days)': rowDuration !== undefined ? rowDuration : (cleanNum(r['Mission_duration(Days)']) ?? 180),
+            No_of_Mission: rowNoMission !== undefined ? rowNoMission : (cleanNum(r.No_of_Mission) ?? 1),
+            Bone_Density_Loss: rowBone !== undefined ? rowBone : (r.Bone_Density_Loss ?? -3.0),
+            Muscle_Mass_Loss: rowMuscle !== undefined ? rowMuscle : (r.Muscle_Mass_Loss ?? 2.5),
+            Radiation_Exposure: rowRadiation !== undefined ? rowRadiation : (cleanNum(r.Radiation_Exposure) ?? 95),
+            Cardiovascular_Risk_Score: rowCardio !== undefined ? rowCardio : (cleanNum(r.Cardiovascular_Risk_Score) ?? 7),
+            Immune_Response_Suppression: rowImmune !== undefined ? rowImmune : (cleanNum(r.Immune_Response_Suppression) ?? 8.0),
+            Psychological_Impact_Score: rowPsych !== undefined ? rowPsych : (cleanNum(r.Psychological_Impact_Score) ?? 5),
+            Vision_Change: rowVision !== undefined ? String(rowVision).trim() : (r.Vision_Change ?? 'Clear'),
+            Countermeasures_Used: rowCountermeasures !== undefined ? String(rowCountermeasures).trim() : (r.Countermeasures_Used ?? 'Exercise, Calcium Supplements'),
+        };
+    });
 
     return {
         sourceType: file.name.endsWith('.csv') ? 'csv' : 'excel',
@@ -121,6 +219,16 @@ export async function parseExcelOrCsvFile(file: File): Promise<ParsedImportPaylo
         gender: gender || 'Unspecified',
         country: country || 'NASA / International',
         evaStatus: evaStatus || 'ON-GOING',
+        missionDurationDays: missionDurationDays !== undefined ? missionDurationDays : 180,
+        noOfMission: noOfMission !== undefined ? noOfMission : 1,
+        boneDensityLoss: boneDensityLoss !== undefined ? boneDensityLoss : '-3.0%',
+        muscleMassLoss: muscleMassLoss !== undefined ? muscleMassLoss : '2.5%',
+        radiationExposure: radiationExposure !== undefined ? radiationExposure : 95,
+        cardioRisk: cardioRisk !== undefined ? cardioRisk : 7,
+        immuneSuppression: immuneSuppression !== undefined ? immuneSuppression : 8.0,
+        psychScore: psychScore !== undefined ? psychScore : 5,
+        vision: vision || 'Clear',
+        countermeasures: countermeasures || 'Exercise, Calcium Supplements',
         heartRate: heartRate !== undefined ? Math.round(heartRate) : 124,
         spO2: spO2 !== undefined ? Number(spO2.toFixed(1)) : 97.5,
         coreTemp: coreTemp !== undefined ? Number(coreTemp.toFixed(1)) : 37.8,
@@ -131,7 +239,8 @@ export async function parseExcelOrCsvFile(file: File): Promise<ParsedImportPaylo
         radiation: radiation || 'Safe (Nominal)',
         battery: battery !== undefined ? Math.round(battery) : 82,
         conditionNote: conditionNote || 'Imported via Spacecraft Telemetry Archive',
-        detectedRows: dataRows.length > 0 ? dataRows : [targetRow],
+        detectedRows: normalizedRows,
+        rawRecord: targetRow,
         rawTextPreview: `Spreadsheet parsed: ${dataRows.length || 1} row(s) identified. Header columns: ${headers.slice(0, 6).join(', ')}...`,
     };
 }
@@ -339,14 +448,21 @@ export async function parseJsonTelemetry(file: File): Promise<ParsedImportPayloa
 export function downloadSampleExcelTemplate(): void {
     const wb = XLSX.utils.book_new();
     const sampleHeaders = [
-        'Astronaut ID',
-        'Astronaut Name',
-        'Role',
-        'Mission',
-        'Age',
+        'Astronaut',
+        'Name',
+        'Age_at_mission_start',
         'Gender',
         'Country',
-        'EVA Status',
+        'Mission_duration(Days)',
+        'No_of_Mission',
+        'Bone_Density_Loss',
+        'Muscle_Mass_Loss',
+        'Radiation_Exposure',
+        'Cardiovascular_Risk_Score',
+        'Immune_Response_Suppression',
+        'Psychological_Impact_Score',
+        'Vision_Change',
+        'Countermeasures_Used',
         'Heart Rate (BPM)',
         'SpO2 (%)',
         'Core Temperature (°C)',
@@ -354,71 +470,134 @@ export function downloadSampleExcelTemplate(): void {
         'Hydration (%)',
         'Suit Pressure (psi)',
         'O2 Reserve (%)',
-        'Radiation Status',
         'Battery (%)',
-        'Condition Alert',
     ];
 
     const sampleRows = [
         [
-            'AST-01',
-            'Commander Alex Vance',
-            'Mission Commander',
-            'ODYSSEY II',
+            1,
+            'CDR. Jay-ar S. De Guzman',
             42,
-            'Male',
-            'USA',
-            'ON-GOING',
-            135,
-            96.4,
-            38.2,
-            24,
-            64,
+            'M',
+            'Philippines',
+            180,
+            1,
+            -3.0,
+            2.5,
+            95,
+            7,
+            8.0,
+            5,
+            'Clear',
+            'Exercise, Calcium Supplements',
+            82,
+            98.5,
+            37.0,
+            16,
+            85,
             4.3,
             21,
-            'Safe',
-            74,
-            'Invasive Dehydration & Thermal Exertion',
+            90,
         ],
         [
-            'AST-02',
-            'Dr. Elena Rostova',
-            'Payload Specialist',
-            'ODYSSEY II',
+            2,
+            'Mel Joseph T. Velasco',
             38,
-            'Female',
-            'Canada',
-            'STANDBY',
+            'M',
+            'Korea',
+            210,
+            1,
+            -4.1,
+            3.2,
+            110,
+            6,
+            7.5,
+            4,
+            'Clear',
+            'Exercise, Calcium Supplements',
             78,
-            99.1,
+            99.0,
             36.8,
-            16,
+            15,
             88,
-            4.4,
-            22,
-            'Safe',
-            95,
-            'Nominal Condition',
-        ],
-        [
-            'AST-03',
-            'Major Marcus Cole',
-            'Flight Engineer',
-            'ODYSSEY II',
-            45,
-            'Male',
-            'UK',
-            'SCHEDULED',
-            84,
-            98.5,
-            37.1,
-            18,
-            82,
             4.3,
             22,
-            'Safe',
-            90,
-            'Nominal Condition',
+            95,
+        ],
+        [
+            3,
+            'Luke Reyes',
+            45,
+            'M',
+            'Japan',
+            165,
+            2,
+            -2.8,
+            2.1,
+            88,
+            5,
+            6.5,
+            3,
+            'Clear',
+            'Exercise, Calcium Supplements',
+            84,
+            98.2,
+            37.1,
+            18,
+            80,
+            4.2,
+            21,
+            88,
+        ],
+        [
+            4,
+            'Jay Dominguez',
+            36,
+            'M',
+            'Europe',
+            240,
+            1,
+            -4.5,
+            3.5,
+            125,
+            8,
+            8.8,
+            6,
+            'Clear',
+            'Exercise, Calcium Supplements',
+            80,
+            98.0,
+            36.9,
+            17,
+            82,
+            4.3,
+            21,
+            85,
+        ],
+        [
+            5,
+            'Sheryn Mae De Vera',
+            41,
+            'F',
+            'Australia',
+            195,
+            1,
+            -3.6,
+            2.7,
+            98,
+            6,
+            7.2,
+            4,
+            'Clear',
+            'Exercise, Calcium Supplements',
+            76,
+            99.4,
+            36.7,
+            14,
+            92,
+            4.4,
+            22,
+            94,
         ],
     ];
 
@@ -432,46 +611,113 @@ export function downloadSampleExcelTemplate(): void {
  * Download sample CSV (.csv) template for testing imports
  */
 export function downloadSampleCsvTemplate(): void {
+    const headers = [
+        'Astronaut',
+        'Name',
+        'Age_at_mission_start',
+        'Gender',
+        'Country',
+        'Mission_duration(Days)',
+        'No_of_Mission',
+        'Bone_Density_Loss',
+        'Muscle_Mass_Loss',
+        'Radiation_Exposure',
+        'Cardiovascular_Risk_Score',
+        'Immune_Response_Suppression',
+        'Psychological_Impact_Score',
+        'Vision_Change',
+        'Countermeasures_Used',
+        'Heart Rate',
+        'SpO2',
+        'Core Temp',
+        'Respiration',
+        'Hydration',
+        'Suit Pressure',
+        'O2 Level',
+        'Battery',
+    ];
+
     const rows = [
         [
-            'Astronaut ID',
-            'Name',
-            'Role',
-            'Mission',
-            'Age',
-            'Gender',
-            'Country',
-            'Heart Rate',
-            'SpO2',
-            'Core Temp',
-            'Respiration',
-            'Hydration',
-            'Suit Pressure',
-            'O2 Level',
-            'Battery',
-        ],
-        [
-            'AST-01',
-            'Commander Alex Vance',
-            'Mission Commander',
-            'ODYSSEY II',
+            '1',
+            'CDR. Jay-ar S. De Guzman',
             '42',
-            'Male',
-            'USA',
-            '135',
-            '96.4',
-            '38.2',
-            '24',
-            '64',
+            'M',
+            'Philippines',
+            '180',
+            '1',
+            '-3.0%',
+            '2.5%',
+            '95',
+            '7',
+            '8.0%',
+            '5',
+            'Clear',
+            'Exercise, Calcium Supplements',
+            '82',
+            '98.5',
+            '37.0',
+            '16',
+            '85',
             '4.3',
             '21',
-            '74',
+            '90',
+        ],
+        [
+            '2',
+            'Mel Joseph T. Velasco',
+            '38',
+            'M',
+            'Korea',
+            '210',
+            '1',
+            '-4.1%',
+            '3.2%',
+            '110',
+            '6',
+            '7.5%',
+            '4',
+            'Clear',
+            'Exercise, Calcium Supplements',
+            '78',
+            '99.0',
+            '36.8',
+            '15',
+            '88',
+            '4.3',
+            '22',
+            '95',
+        ],
+        [
+            '3',
+            'Luke Reyes',
+            '45',
+            'M',
+            'Japan',
+            '165',
+            '2',
+            '-2.8%',
+            '2.1%',
+            '88',
+            '5',
+            '6.5%',
+            '3',
+            'Clear',
+            'Exercise, Calcium Supplements',
+            '84',
+            '98.2',
+            '37.1',
+            '18',
+            '80',
+            '4.2',
+            '21',
+            '88',
         ],
     ];
 
     const csvContent =
         'data:text/csv;charset=utf-8,' +
-        rows.map((row) => row.map((val) => `"${val}"`).join(',')).join('\n');
+        [headers, ...rows].map((row) => row.map((val) => `"${val}"`).join(',')).join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);

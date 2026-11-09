@@ -65,7 +65,7 @@ export interface AstronautFullData {
 export interface ParsedImportPayload {
     sourceType: 'excel' | 'pdf' | 'image' | 'json' | 'csv';
     fileName: string;
-    astronautId?: string;
+    astronautId?: string | number;
     name?: string;
     role?: string;
     mission?: string;
@@ -73,6 +73,16 @@ export interface ParsedImportPayload {
     gender?: string;
     country?: string;
     evaStatus?: string;
+    missionDurationDays?: number;
+    noOfMission?: number;
+    boneDensityLoss?: string | number;
+    muscleMassLoss?: string | number;
+    radiationExposure?: number;
+    cardioRisk?: number;
+    immuneSuppression?: number;
+    psychScore?: number;
+    vision?: string;
+    countermeasures?: string;
     heartRate?: number;
     spO2?: number;
     coreTemp?: number;
@@ -86,4 +96,5 @@ export interface ParsedImportPayload {
     detectedRows?: any[];
     rawTextPreview?: string;
     imageThumbnail?: string;
+    rawRecord?: Record<string, any>;
 }

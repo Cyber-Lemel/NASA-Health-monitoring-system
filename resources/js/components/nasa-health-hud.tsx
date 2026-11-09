@@ -186,26 +186,34 @@ const DEFAULT_CREW_ROSTER = [
 
 // Helper to generate dynamic astronaut profile from dataset record
 function generateAstronautProfile(record: any, timeStr: string): AstronautFullData {
-    const id = record.Astronaut || record.id || 'AST-XX';
+    const rawId = record.Astronaut ?? record.id ?? 'AST-XX';
+    const id = String(rawId);
     const name = record.Name || record.name || 'Unknown Specialist';
     const role = record.Role || record.role || 'Astronaut Specialist';
     const country = record.Country || record.country || 'NASA / International';
-    const age = Number(record.Age_at_mission_start) || 40;
-    const gender = record.Gender || record.gender || 'Not Specified';
-    const missionDays = Number(record['Mission_duration(Days)']) || 180;
-    const boneLoss = record.Bone_Density_Loss || '-3.0%';
+    
+    // Exact Age matching across all casing & conventions
+    const rawAge = record.Age_at_mission_start ?? record.age ?? record.Age ?? record.launch_age;
+    const age = (rawAge !== undefined && rawAge !== null && !isNaN(Number(rawAge))) ? Number(rawAge) : 40;
 
-    // Seed-based pseudo-random vitals
-    const seed = (id.charCodeAt(id.length - 1) || 42) + missionDays;
-    const hr = 70 + (seed % 65); // 70 to 135 bpm
-    const spo2 = 95 + (seed % 5); // 95 to 99%
-    const coreTemp = +(36.7 + ((seed % 15) / 10)).toFixed(1); // 36.7 to 38.2 C
-    const respiration = 14 + (seed % 12); // 14 to 26 bpm
-    const hydrationPct = 60 + (seed % 35); // 60 to 95%
-    const suitPressurePsi = +(4.1 + ((seed % 4) / 10)).toFixed(1); // 4.1 to 4.4 psi
+    const gender = record.Gender || record.gender || 'Not Specified';
+
+    // Exact Flight Duration matching across all casing & conventions
+    const rawDuration = record['Mission_duration(Days)'] ?? record.missionDurationDays ?? record.duration ?? record.Mission_duration ?? record.Flight_Duration;
+    const missionDays = (rawDuration !== undefined && rawDuration !== null && !isNaN(Number(rawDuration))) ? Number(rawDuration) : 180;
+    const boneLoss = record.Bone_Density_Loss !== undefined ? String(record.Bone_Density_Loss) : '-3.0%';
+
+    // Seed-based vitals with fallback if direct values are not present
+    const seed = (id.charCodeAt(Math.max(0, id.length - 1)) || 42) + missionDays;
+    const hr = record.HeartRate || record.heartRate || (70 + (seed % 65));
+    const spo2 = record.SpO2 || record.spO2 || (95 + (seed % 5));
+    const coreTemp = record.CoreTemp || record.coreTemp || +(36.7 + ((seed % 15) / 10)).toFixed(1);
+    const respiration = record.Respiration || record.respiration || (14 + (seed % 12));
+    const hydrationPct = record.Hydration || record.hydration || (60 + (seed % 35));
+    const suitPressurePsi = record.SuitPressure || record.suitPressure || +(4.1 + ((seed % 4) / 10)).toFixed(1);
     const suitPressurePercent = Math.min(100, Math.round((suitPressurePsi / 5) * 100));
-    const o2Percent = 20 + (seed % 3); // 20 to 22%
-    const batteryPercent = 65 + (seed % 30); // 65 to 95%
+    const o2Percent = record.O2Level || record.o2Percent || (20 + (seed % 3));
+    const batteryPercent = record.Battery || record.battery || (65 + (seed % 30));
 
     const isHrElevated = hr > 115;
     const hrStatus = isHrElevated ? '(Elevated)' : hr > 100 ? '(Moderate)' : '(Nominal)';
@@ -725,6 +733,11 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         </div>
                         <span className="font-bold text-xs truncate max-w-[120px] sm:max-w-[170px]">{activeAstronaut.bio.name}</span>
                         <span className="text-[10px] text-[#5cdbdf] font-mono">({activeAstronaut.bio.id})</span>
+                        <span className="hidden sm:inline-flex items-center gap-1.5 border-l border-[#1a4b6c] pl-2 text-[10px] font-mono">
+                            <span className="text-amber-400 font-semibold">{activeAstronaut.bio.age}y</span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-sky-300 font-semibold">{activeAstronaut.bio.missionDurationDays}d</span>
+                        </span>
                         <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-white" />
                     </button>
 
@@ -1166,7 +1179,26 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         Name: data.name || 'Mission Specialist',
                         Country: data.country || 'NASA / International',
                         Gender: data.gender || 'Not Specified',
-                        Age_at_mission_start: data.age || 40,
+                        Age_at_mission_start: data.age,
+                        'Mission_duration(Days)': data.missionDurationDays,
+                        No_of_Mission: data.noOfMission,
+                        Bone_Density_Loss: data.boneDensityLoss,
+                        Muscle_Mass_Loss: data.muscleMassLoss,
+                        Radiation_Exposure: data.radiationExposure,
+                        Cardiovascular_Risk_Score: data.cardioRisk,
+                        Immune_Response_Suppression: data.immuneSuppression,
+                        Psychological_Impact_Score: data.psychScore,
+                        Vision_Change: data.vision,
+                        Countermeasures_Used: data.countermeasures,
+                        HeartRate: data.heartRate,
+                        SpO2: data.spO2,
+                        CoreTemp: data.coreTemp,
+                        Respiration: data.respiration,
+                        Hydration: data.hydration,
+                        SuitPressure: data.suitPressure,
+                        O2Level: data.o2Level,
+                        Battery: data.battery,
+                        Radiation: data.radiation,
                     }, currentTimeStr);
 
                     setActiveAstronaut((prev) => ({
@@ -1175,32 +1207,64 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             ...profile.bio,
                             name: data.name || prev.bio.name,
                             id: data.astronautId || prev.bio.id,
+                            age: data.age ?? profile.bio.age,
+                            country: data.country || profile.bio.country,
+                            missionDurationDays: data.missionDurationDays ?? profile.bio.missionDurationDays,
+                            boneDensityLoss: data.boneDensityLoss !== undefined ? String(data.boneDensityLoss) : profile.bio.boneDensityLoss,
                         },
                         vitals: {
                             ...profile.vitals,
                             heartRate: {
                                 ...profile.vitals.heartRate,
-                                numericValue: data.heartRate || profile.vitals.heartRate.numericValue,
-                                value: `${data.heartRate || profile.vitals.heartRate.numericValue} bpm`,
+                                numericValue: data.heartRate ?? profile.vitals.heartRate.numericValue,
+                                value: `${data.heartRate ?? profile.vitals.heartRate.numericValue} bpm`,
                             },
                             spO2: {
                                 ...profile.vitals.spO2,
-                                numericValue: data.spO2 || profile.vitals.spO2.numericValue,
-                                value: `${data.spO2 || profile.vitals.spO2.numericValue}%`,
+                                numericValue: data.spO2 ?? profile.vitals.spO2.numericValue,
+                                value: `${data.spO2 ?? profile.vitals.spO2.numericValue}%`,
+                            },
+                            coreTemp: {
+                                ...profile.vitals.coreTemp,
+                                numericValue: data.coreTemp ?? profile.vitals.coreTemp.numericValue,
+                                value: `${data.coreTemp ?? profile.vitals.coreTemp.numericValue}°C`,
+                            },
+                            respiration: {
+                                ...profile.vitals.respiration,
+                                numericValue: data.respiration ?? profile.vitals.respiration.numericValue,
+                                value: `${data.respiration ?? profile.vitals.respiration.numericValue} bpm`,
+                            },
+                            hydration: {
+                                ...profile.vitals.hydration,
+                                numericValue: data.hydration ?? profile.vitals.hydration.numericValue,
+                                value: `${data.hydration ?? profile.vitals.hydration.numericValue}%`,
                             },
                         },
                     }));
                 }}
                 onSaveToDatabase={async (data) => {
                     const recordPayload = {
-                        Astronaut: data.astronautId || 'AST-' + Math.floor(10 + Math.random() * 90),
-                        Name: data.name || 'Mission Specialist',
-                        Country: data.country || 'NASA / International',
-                        Gender: data.gender || 'Not Specified',
-                        Age_at_mission_start: data.age || 40,
-                        'Mission_duration(Days)': 180,
-                        Bone_Density_Loss: '-3.0%',
+                        Astronaut: data.astronautId,
+                        Name: data.name,
+                        Age_at_mission_start: data.age,
+                        Gender: data.gender,
+                        Country: data.country,
+                        'Mission_duration(Days)': data.missionDurationDays,
+                        No_of_Mission: data.noOfMission,
+                        Bone_Density_Loss: data.boneDensityLoss,
+                        Muscle_Mass_Loss: data.muscleMassLoss,
+                        Radiation_Exposure: data.radiationExposure,
+                        Cardiovascular_Risk_Score: data.cardioRisk,
+                        Immune_Response_Suppression: data.immuneSuppression,
+                        Psychological_Impact_Score: data.psychScore,
+                        Vision_Change: data.vision,
+                        Countermeasures_Used: data.countermeasures,
+                        ...(data.rawRecord || {}),
                     };
+
+                    const payload = (data.detectedRows && data.detectedRows.length > 0)
+                        ? { detectedRows: data.detectedRows }
+                        : { record: recordPayload };
 
                     const response = await fetch('/api/dataset/import', {
                         method: 'POST',
@@ -1208,12 +1272,26 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             'Content-Type': 'application/json',
                             Accept: 'application/json',
                         },
-                        body: JSON.stringify({ record: recordPayload }),
+                        body: JSON.stringify(payload),
                     });
 
                     const resJson = await response.json();
+                    if (!response.ok || !resJson.success) {
+                        throw new Error(resJson.message || 'Import failed');
+                    }
+
                     if (resJson.success && resJson.records) {
                         setCrewList(resJson.records);
+                        // If single record was saved or image scan, auto-switch active astronaut to it
+                        const savedRecord = resJson.records.find(
+                            (r: any) =>
+                                (data.astronautId && String(r.Astronaut) === String(data.astronautId)) ||
+                                (data.name && String(r.Name).toLowerCase() === String(data.name).toLowerCase())
+                        ) || resJson.records[resJson.records.length - 1];
+
+                        if (savedRecord && (!data.detectedRows || data.detectedRows.length <= 1)) {
+                            setActiveAstronaut(generateAstronautProfile(savedRecord, currentTimeStr));
+                        }
                     }
                 }}
                 activeAstronaut={activeAstronaut}
