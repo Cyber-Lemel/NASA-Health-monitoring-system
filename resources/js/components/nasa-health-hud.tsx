@@ -836,8 +836,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                     type="button"
                     onClick={() => setActiveTab('DASHBOARD')}
                     className={`pb-2 transition-colors cursor-pointer border-b-2 font-bold ${activeTab === 'DASHBOARD'
-                            ? 'border-[#5cdbdf] text-white'
-                            : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
+                        ? 'border-[#5cdbdf] text-white'
+                        : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
                         }`}
                 >
                     DASHBOARD
@@ -849,8 +849,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         setIsBiometricsModalOpen(true);
                     }}
                     className={`pb-2 transition-colors cursor-pointer border-b-2 font-bold ${activeTab === 'BIOMETRICS'
-                            ? 'border-[#5cdbdf] text-white'
-                            : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
+                        ? 'border-[#5cdbdf] text-white'
+                        : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
                         }`}
                 >
                     BIOMETRICS
@@ -862,8 +862,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         setIsSuitModalOpen(true);
                     }}
                     className={`pb-2 transition-colors cursor-pointer border-b-2 font-bold ${activeTab === 'SUIT SYSTEMS'
-                            ? 'border-[#5cdbdf] text-white'
-                            : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
+                        ? 'border-[#5cdbdf] text-white'
+                        : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
                         }`}
                 >
                     SUIT SYSTEMS
@@ -875,8 +875,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         setIsLogsModalOpen(true);
                     }}
                     className={`pb-2 transition-colors cursor-pointer border-b-2 font-bold ${activeTab === 'MISSION LOGS'
-                            ? 'border-[#5cdbdf] text-white'
-                            : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
+                        ? 'border-[#5cdbdf] text-white'
+                        : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
                         }`}
                 >
                     MISSION LOGS
@@ -888,8 +888,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         setIsSettingsModalOpen(true);
                     }}
                     className={`pb-2 transition-colors cursor-pointer border-b-2 font-bold ${activeTab === 'SETTINGS'
-                            ? 'border-[#5cdbdf] text-white'
-                            : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
+                        ? 'border-[#5cdbdf] text-white'
+                        : 'border-transparent text-slate-400 hover:text-[#5cdbdf]'
                         }`}
                 >
                     SETTINGS
@@ -908,10 +908,10 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         >
                             <span className="text-slate-300">EVA STATUS:</span>
                             <span className={`font-bold ${activeAstronaut.bio.evaStatus === 'ON-GOING'
-                                    ? 'text-orange-400 animate-pulse'
-                                    : activeAstronaut.bio.evaStatus === 'ABORTED'
-                                        ? 'text-red-500'
-                                        : 'text-emerald-400'
+                                ? 'text-orange-400 animate-pulse'
+                                : activeAstronaut.bio.evaStatus === 'ABORTED'
+                                    ? 'text-red-500'
+                                    : 'text-emerald-400'
                                 }`}>
                                 {activeAstronaut.bio.evaStatus}
                             </span>
@@ -981,8 +981,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             toast.info(next ? 'Continuous live Reverb telemetry stream STARTED' : 'Continuous live stream PAUSED');
                         }}
                         className={`flex items-center gap-1.5 border px-3 py-1.5 text-xs transition-colors cursor-pointer ${isAutoLiveStream
-                                ? 'border-emerald-400 bg-emerald-950 text-emerald-300 font-bold shadow-[0_0_10px_rgba(52,211,153,0.3)]'
-                                : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:text-white'
+                            ? 'border-emerald-400 bg-emerald-950 text-emerald-300 font-bold shadow-[0_0_10px_rgba(52,211,153,0.3)]'
+                            : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:text-white'
                             }`}
                     >
                         <Radio className={`w-3.5 h-3.5 ${isAutoLiveStream ? 'animate-pulse text-emerald-400' : ''}`} />
@@ -1025,8 +1025,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                                 type="button"
                                 onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
                                 className={`flex items-center gap-2 border px-2.5 py-1 text-xs transition-all cursor-pointer ${isSwitcherOpen
-                                        ? 'border-[#5cdbdf] bg-[#0a1f2e] text-[#5cdbdf] shadow-[0_0_10px_rgba(92,219,223,0.3)]'
-                                        : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-200 hover:text-[#5cdbdf] hover:border-[#5cdbdf]'
+                                    ? 'border-[#5cdbdf] bg-[#0a1f2e] text-[#5cdbdf] shadow-[0_0_10px_rgba(92,219,223,0.3)]'
+                                    : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-200 hover:text-[#5cdbdf] hover:border-[#5cdbdf]'
                                     }`}
                                 title="Switch active astronaut telemetry profile"
                             >
@@ -1099,15 +1099,15 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                                                         key={`${cid}-${i}`}
                                                         onClick={() => handleSelectAstronaut(c)}
                                                         className={`p-2.5 flex items-center justify-between gap-2 cursor-pointer transition-all ${isSelected
-                                                                ? 'bg-[#5cdbdf]/15 text-white border-l-2 border-l-[#5cdbdf]'
-                                                                : 'text-slate-300 hover:bg-[#0a1f2e] hover:text-white hover:border-l-2 hover:border-l-[#5cdbdf]/50 border-l-2 border-l-transparent'
+                                                            ? 'bg-[#5cdbdf]/15 text-white border-l-2 border-l-[#5cdbdf]'
+                                                            : 'text-slate-300 hover:bg-[#0a1f2e] hover:text-white hover:border-l-2 hover:border-l-[#5cdbdf]/50 border-l-2 border-l-transparent'
                                                             }`}
                                                     >
                                                         <div className="flex items-center gap-2.5 overflow-hidden">
                                                             <div
                                                                 className={`w-2 h-2 rounded-full shrink-0 ${isSelected
-                                                                        ? 'bg-[#5cdbdf] shadow-[0_0_8px_#5cdbdf] animate-pulse'
-                                                                        : 'bg-slate-600'
+                                                                    ? 'bg-[#5cdbdf] shadow-[0_0_8px_#5cdbdf] animate-pulse'
+                                                                    : 'bg-slate-600'
                                                                     }`}
                                                             />
                                                             <div className="truncate">
@@ -1247,13 +1247,13 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                                 <div
                                     key={alertIdx}
                                     className={`border p-3 text-xs space-y-3 ${isCritical
-                                            ? 'border-orange-500/50 bg-[#1a1005]'
-                                            : 'border-[#5cdbdf]/50 bg-[#0a1f2e]/50'
+                                        ? 'border-orange-500/50 bg-[#1a1005]'
+                                        : 'border-[#5cdbdf]/50 bg-[#0a1f2e]/50'
                                         }`}
                                 >
                                     <div className={`font-bold border-b pb-2 flex items-center justify-between ${isCritical
-                                            ? 'text-orange-400 border-orange-500/30'
-                                            : 'text-[#5cdbdf] border-[#5cdbdf]/30'
+                                        ? 'text-orange-400 border-orange-500/30'
+                                        : 'text-[#5cdbdf] border-[#5cdbdf]/30'
                                         }`}>
                                         <span>{alert.title}</span>
                                         {isCritical && <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0" />}
