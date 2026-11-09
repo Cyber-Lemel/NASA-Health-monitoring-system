@@ -150,8 +150,353 @@ const DEFAULT_ASTRONAUT: AstronautFullData = {
     ],
 };
 
+// Master Piccolo Telemetry Profile (Dragon Ball Namekian Super Warrior)
+const PICCOLO_ASTRONAUT: AstronautFullData = {
+    bio: {
+        id: 'AST-PICCOLO',
+        name: 'Master Piccolo',
+        role: 'Namekian Super Warrior • Planetary Defense',
+        mission: 'ODYSSEY II',
+        evaStatus: 'ON-GOING',
+        age: 29,
+        gender: 'Namekian',
+        country: 'Planet Namek / Earth Defense',
+        missionDurationDays: 3650,
+        boneDensityLoss: '0.0% (Cellular Hyper-Regeneration Matrix)',
+    },
+    vitals: {
+        heartRate: {
+            title: 'ECG',
+            value: 'Heart Rate: 72 bpm',
+            numericValue: 72,
+            unit: 'bpm',
+            status: '(Ki Resonance Balance)',
+            color: '#84cc16',
+            type: 'ecg',
+            baseline: '65 - 80 bpm',
+        },
+        spO2: {
+            title: 'SpO2',
+            value: '100%',
+            numericValue: 100,
+            unit: '%',
+            color: '#84cc16',
+            type: 'sine',
+            baseline: '98 - 100%',
+        },
+        coreTemp: {
+            title: 'CORE TEMPERATURE',
+            value: '36.8°C',
+            numericValue: 36.8,
+            unit: '°C',
+            status: '(Optimal Bio-Regen)',
+            color: '#84cc16',
+            type: 'ecg',
+            baseline: '36.5 - 37.2°C',
+        },
+        respiration: {
+            title: 'RESPIRATION',
+            value: '8 bpm',
+            numericValue: 8,
+            unit: 'bpm',
+            color: '#84cc16',
+            type: 'slow-sine',
+            baseline: '6 - 12 bpm',
+        },
+        hydration: {
+            title: 'HYDRATION',
+            value: 'Optimal, 98%',
+            numericValue: 98,
+            unit: '%',
+            color: '#84cc16',
+            valueColor: '#84cc16',
+            type: 'flat',
+            baseline: '90 - 100%',
+        },
+    },
+    diagnostics: {
+        suitPressurePsi: 4.3,
+        suitPressurePercent: 62,
+        o2Percent: 21,
+        radiationStatus: 'Safe (100% Ki Deflection)',
+        radiationPercent: 98,
+        batteryPercent: 96,
+    },
+    alerts: [
+        {
+            level: 'INFO',
+            title: 'WEIGHTED TRAINING GEAR (250 KG) ACTIVE • GRAVITATIONAL LOAD LOCKED',
+            actionsTaken: [
+                '[CHECKED] Weighted mantle & cowl gravitational stabilizer nominal.',
+                '[CHECKED] Namekian muscular density fully conditioned to zero-G.',
+            ],
+            recommendedAction: 'Maintain current weighted training mass; monitor orbital Ki emission.',
+        },
+        {
+            level: 'NOMINAL',
+            title: 'MAKANKOSAPPO (SPECIAL BEAM CANNON) ENERGY CHARGED READY',
+            actionsTaken: [
+                '[CHECKED] Spiraling Ki helix resonance synchronized at UHF frequency.',
+                '[CHECKED] Telepathic deep-space mission link confirmed.',
+            ],
+            recommendedAction: 'Hold Ki energy at standby for orbital sensor calibration.',
+        },
+    ],
+    logs: [
+        {
+            id: 'log-piccolo-1',
+            timestamp: '13:45',
+            title: 'Ki Balance Lock: 1,200,000 BP',
+            action: '[NAMEKIAN PHYSIOLOGY] Deep meditative Ki balance confirmed at 72 bpm',
+            status: 'RESOLVED',
+        },
+        {
+            id: 'log-piccolo-2',
+            timestamp: '13:40',
+            title: 'Special Beam Cannon Charge',
+            action: '[ENERGY SPIKE] Spiraling Ki helix verified at nominal discharge frequency',
+            status: 'RESOLVED',
+        },
+        {
+            id: 'log-piccolo-3',
+            timestamp: '13:20',
+            title: 'Cellular Regeneration Scan',
+            action: '[NAMEKIAN REGEN] 0.0% musculoskeletal degeneration under microgravity',
+            status: 'RESOLVED',
+        },
+    ],
+};
+
+// Chief Mage Frieren Telemetry Profile
+const FRIEREN_ASTRONAUT: AstronautFullData = {
+    bio: {
+        id: 'AST-FRIEREN',
+        name: 'Chief Mage Frieren',
+        role: 'Chief Science Specialist • Elven Mage',
+        mission: 'ODYSSEY II',
+        evaStatus: 'ON-GOING',
+        age: 1000,
+        gender: 'Female',
+        country: 'Northern Lands / Magic Association',
+        missionDurationDays: 3650,
+        boneDensityLoss: '0.0% (Elven Longevity Matrix)',
+    },
+    vitals: {
+        heartRate: {
+            title: 'ECG',
+            value: 'Heart Rate: 64 bpm',
+            numericValue: 64,
+            unit: 'bpm',
+            status: '(Mana Concealment)',
+            color: '#5cdbdf',
+            type: 'ecg',
+            baseline: '55 - 75 bpm',
+        },
+        spO2: {
+            title: 'SpO2',
+            value: '99.8%',
+            numericValue: 99.8,
+            unit: '%',
+            color: '#5cdbdf',
+            type: 'sine',
+            baseline: '95 - 100%',
+        },
+        coreTemp: {
+            title: 'CORE TEMPERATURE',
+            value: '36.6°C',
+            numericValue: 36.6,
+            unit: '°C',
+            status: '(Optimal)',
+            color: '#5cdbdf',
+            type: 'ecg',
+            baseline: '36.4 - 37.2°C',
+        },
+        respiration: {
+            title: 'RESPIRATION',
+            value: '12 bpm',
+            numericValue: 12,
+            unit: 'bpm',
+            color: '#5cdbdf',
+            type: 'slow-sine',
+            baseline: '10 - 18 bpm',
+        },
+        hydration: {
+            title: 'HYDRATION',
+            value: 'Optimal, 96%',
+            numericValue: 96,
+            unit: '%',
+            color: '#5cdbdf',
+            valueColor: '#5cdbdf',
+            type: 'flat',
+            baseline: '85 - 100%',
+        },
+    },
+    diagnostics: {
+        suitPressurePsi: 4.3,
+        suitPressurePercent: 60,
+        o2Percent: 21,
+        radiationStatus: 'Safe (Mana Barrier Field)',
+        radiationPercent: 96,
+        batteryPercent: 94,
+    },
+    alerts: [
+        {
+            level: 'INFO',
+            title: 'CONTINUOUS MANA SUPPRESSION ACTIVE • OPTIMAL BIO-CALM',
+            actionsTaken: [
+                '[CHECKED] Elven atmospheric life support passive barrier confirmed.',
+                '[CHECKED] Deep-space cosmic ray deflection locked via passive barrier weave.',
+            ],
+            recommendedAction: 'Proceed with ancient grimoire decryption and orbital sensor analysis.',
+        },
+    ],
+    logs: [
+        {
+            id: 'log-frieren-1',
+            timestamp: '13:42',
+            title: 'Mana Concealment Active',
+            action: '[ELVEN METABOLISM] Resting heart rate locked at meditative 64 bpm',
+            status: 'RESOLVED',
+        },
+    ],
+};
+
+// Capt. Monkey D. Luffy Telemetry Profile
+const LUFFY_ASTRONAUT: AstronautFullData = {
+    bio: {
+        id: 'AST-LUFFY',
+        name: 'Capt. Monkey D. Luffy',
+        role: 'Straw Hat Commander • EVA Lead',
+        mission: 'ODYSSEY II',
+        evaStatus: 'ON-GOING',
+        age: 19,
+        gender: 'Male',
+        country: 'Grand Line / NASA JAXA',
+        missionDurationDays: 174,
+        boneDensityLoss: '0.0% (Rubber Matrix)',
+    },
+    vitals: {
+        heartRate: {
+            title: 'ECG',
+            value: 'Heart Rate: 138 bpm',
+            numericValue: 138,
+            unit: 'bpm',
+            status: '(Gear 2 Acceleration)',
+            color: '#ef4444',
+            type: 'ecg',
+            baseline: '70 - 140 bpm',
+        },
+        spO2: {
+            title: 'SpO2',
+            value: '99.4%',
+            numericValue: 99.4,
+            unit: '%',
+            color: '#5cdbdf',
+            type: 'sine',
+            baseline: '95 - 100%',
+        },
+        coreTemp: {
+            title: 'CORE TEMPERATURE',
+            value: '38.4°C',
+            numericValue: 38.4,
+            unit: '°C',
+            status: '(Thermal Steam Radiance)',
+            color: '#f97316',
+            type: 'ecg',
+            baseline: '36.5 - 38.5°C',
+        },
+        respiration: {
+            title: 'RESPIRATION',
+            value: '22 bpm',
+            numericValue: 22,
+            unit: 'bpm',
+            color: '#5cdbdf',
+            type: 'slow-sine',
+            baseline: '12 - 24 bpm',
+        },
+        hydration: {
+            title: 'HYDRATION',
+            value: 'Optimal, 94%',
+            numericValue: 94,
+            unit: '%',
+            color: '#5cdbdf',
+            valueColor: '#5cdbdf',
+            type: 'flat',
+            baseline: '80 - 100%',
+        },
+    },
+    diagnostics: {
+        suitPressurePsi: 4.3,
+        suitPressurePercent: 62,
+        o2Percent: 21,
+        radiationStatus: 'Safe (Haki Shielding)',
+        radiationPercent: 92,
+        batteryPercent: 88,
+    },
+    alerts: [
+        {
+            level: 'WARNING',
+            title: 'GEAR SECOND VASCULAR ACTIVATION • METABOLIC SURGE',
+            actionsTaken: [
+                '[CHECKED] Bio-thermal heat dissipation venting steam.',
+                '[CHECKED] Elastic arterial bloodflow verified under microgravity.',
+            ],
+            recommendedAction: 'Maintain current EVA momentum; monitor stamina.',
+        },
+    ],
+    logs: [
+        {
+            id: 'log-luffy-1',
+            timestamp: '13:45',
+            title: 'Gear Second Biometric Lock',
+            action: '[VASCULAR] Heart rate acceleration (138 bpm) with rubber elasticity active',
+            status: 'RESOLVED',
+        },
+    ],
+};
+
 // Default fallback crew roster if database records are empty
 const DEFAULT_CREW_ROSTER = [
+    {
+        Astronaut: 'AST-PICCOLO',
+        Name: 'Master Piccolo',
+        Country: 'Planet Namek / Earth Defense',
+        Gender: 'Namekian',
+        Age_at_mission_start: 29,
+        'Mission_duration(Days)': 3650,
+        Bone_Density_Loss: '0.0%',
+        Role: 'Namekian Super Warrior • Planetary Defense',
+    },
+    {
+        Astronaut: 'AST-FRIEREN',
+        Name: 'Chief Mage Frieren',
+        Country: 'Northern Lands / Magic Association',
+        Gender: 'Female',
+        Age_at_mission_start: 1000,
+        'Mission_duration(Days)': 3650,
+        Bone_Density_Loss: '0.0%',
+        Role: 'Chief Science Specialist • Elven Mage',
+    },
+    {
+        Astronaut: 'AST-LUFFY',
+        Name: 'Capt. Monkey D. Luffy',
+        Country: 'Grand Line / NASA JAXA',
+        Gender: 'Male',
+        Age_at_mission_start: 19,
+        'Mission_duration(Days)': 174,
+        Bone_Density_Loss: '0.0%',
+        Role: 'Straw Hat Commander • EVA Lead',
+    },
+    {
+        Astronaut: 'AST-00',
+        Name: 'CDR. Elena Rovani',
+        Country: 'USA',
+        Gender: 'Female',
+        Age_at_mission_start: 38,
+        'Mission_duration(Days)': 195,
+        Bone_Density_Loss: '-3.6%',
+        Role: 'Mission Commander',
+    },
     {
         Astronaut: 'AST-01',
         Name: 'Commander Alex Vance',
@@ -172,46 +517,6 @@ const DEFAULT_CREW_ROSTER = [
         Bone_Density_Loss: '-4.1%',
         Role: 'Senior Payload Specialist',
     },
-    {
-        Astronaut: 'AST-03',
-        Name: 'Major Marcus Cole',
-        Country: 'UK',
-        Gender: 'Male',
-        Age_at_mission_start: 45,
-        'Mission_duration(Days)': 165,
-        Bone_Density_Loss: '-2.8%',
-        Role: 'Robotics & Avionics Officer',
-    },
-    {
-        Astronaut: 'AST-04',
-        Name: 'Dr. Peggy Whitson',
-        Country: 'USA',
-        Gender: 'Female',
-        Age_at_mission_start: 48,
-        'Mission_duration(Days)': 288,
-        Bone_Density_Loss: '-5.4%',
-        Role: 'Science Operations Specialist',
-    },
-    {
-        Astronaut: 'AST-05',
-        Name: 'Col. Chris Hadfield',
-        Country: 'Canada',
-        Gender: 'Male',
-        Age_at_mission_start: 53,
-        'Mission_duration(Days)': 146,
-        Bone_Density_Loss: '-2.5%',
-        Role: 'Spacecraft Systems Commander',
-    },
-    {
-        Astronaut: 'AST-06',
-        Name: 'Capt. Sunita Williams',
-        Country: 'USA',
-        Gender: 'Female',
-        Age_at_mission_start: 41,
-        'Mission_duration(Days)': 195,
-        Bone_Density_Loss: '-3.8%',
-        Role: 'EVA Operations Lead',
-    },
 ];
 
 // Helper to generate full realistic astronaut biomedical telemetry profiles
@@ -224,6 +529,21 @@ function generateAstronautProfile(record: any, currentTimeStr: string = '13:45:1
     const age = Number(record.Age_at_mission_start || record.age || 40);
     const missionDays = Number(record['Mission_duration(Days)'] || record.missionDurationDays || 180);
     const boneLoss = record.Bone_Density_Loss || record.boneDensityLoss || '-3.2%';
+
+    const isPiccolo = id.includes('PICCOLO') || name.toLowerCase().includes('piccolo');
+    if (isPiccolo) {
+        return PICCOLO_ASTRONAUT;
+    }
+
+    const isFrieren = id.includes('FRIEREN') || name.toLowerCase().includes('frieren');
+    if (isFrieren) {
+        return FRIEREN_ASTRONAUT;
+    }
+
+    const isLuffy = id.includes('LUFFY') || name.toLowerCase().includes('luffy');
+    if (isLuffy) {
+        return LUFFY_ASTRONAUT;
+    }
 
     const isElena = id === 'AST-00' || name.toLowerCase().includes('elena rovani');
     if (isElena) {
@@ -453,8 +773,19 @@ function generateAstronautProfile(record: any, currentTimeStr: string = '13:45:1
 }
 
 export default function NasaHealthHud({ initialData }: { initialData?: any }) {
-    // Active astronaut data
-    const [activeAstronaut, setActiveAstronaut] = useState<AstronautFullData>(DEFAULT_ASTRONAUT);
+    // Active astronaut data (Defaulting to Master Piccolo)
+    const [activeAstronaut, setActiveAstronaut] = useState<AstronautFullData>(() => {
+        try {
+            const savedId = typeof window !== 'undefined' ? sessionStorage.getItem('nasa_active_astronaut_id') : null;
+            if (savedId === 'AST-00') return DEFAULT_ASTRONAUT;
+            if (savedId === 'AST-FRIEREN') return FRIEREN_ASTRONAUT;
+            if (savedId === 'AST-LUFFY') return LUFFY_ASTRONAUT;
+            if (savedId === 'AST-PICCOLO') return PICCOLO_ASTRONAUT;
+        } catch {
+            // ignore
+        }
+        return PICCOLO_ASTRONAUT;
+    });
 
     // Database crew roster
     const [crewList, setCrewList] = useState<any[]>(() => initialData?.records || []);
@@ -714,11 +1045,38 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
         }));
     };
 
-    // Effective crew roster (combines fallback if empty)
-    const effectiveCrewList = crewList && crewList.length > 0 ? crewList : DEFAULT_CREW_ROSTER;
-
-    // Filter crew roster for switcher
-    const filteredCrew = [
+    // Full composite crew roster: Piccolo at the top, Frieren, Luffy, Elena Rovani, and database records
+    const allCrewMembers = [
+        {
+            Astronaut: 'AST-PICCOLO',
+            Name: 'Master Piccolo',
+            Country: 'Planet Namek / Earth Defense',
+            Gender: 'Namekian',
+            Age_at_mission_start: 29,
+            'Mission_duration(Days)': 3650,
+            Bone_Density_Loss: '0.0%',
+            Role: 'Namekian Super Warrior • Planetary Defense',
+        },
+        {
+            Astronaut: 'AST-FRIEREN',
+            Name: 'Chief Mage Frieren',
+            Country: 'Northern Lands / Magic Association',
+            Gender: 'Female',
+            Age_at_mission_start: 1000,
+            'Mission_duration(Days)': 3650,
+            Bone_Density_Loss: '0.0%',
+            Role: 'Chief Science Specialist • Elven Mage',
+        },
+        {
+            Astronaut: 'AST-LUFFY',
+            Name: 'Capt. Monkey D. Luffy',
+            Country: 'Grand Line / NASA JAXA',
+            Gender: 'Male',
+            Age_at_mission_start: 19,
+            'Mission_duration(Days)': 174,
+            Bone_Density_Loss: '0.0%',
+            Role: 'Straw Hat Commander • EVA Lead',
+        },
         {
             Astronaut: 'AST-00',
             Name: 'CDR. Elena Rovani',
@@ -729,12 +1087,19 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
             Bone_Density_Loss: '-3.6%',
             Role: 'Mission Commander',
         },
-        ...effectiveCrewList.filter((c) => {
+        ...(crewList || []).filter((c) => {
             const rawId = String(c.Astronaut ?? c.id ?? '');
-            const rawName = String(c.Name ?? c.name ?? '');
-            return rawId !== 'AST-00' && !rawName.toLowerCase().includes('elena rovani');
+            const rawName = String(c.Name ?? c.name ?? '').toLowerCase();
+            return !['AST-00', 'AST-PICCOLO', 'AST-FRIEREN', 'AST-LUFFY'].includes(rawId) &&
+                   !rawName.includes('elena rovani') &&
+                   !rawName.includes('piccolo') &&
+                   !rawName.includes('frieren') &&
+                   !rawName.includes('luffy');
         }),
-    ].filter((c) => {
+    ];
+
+    // Filter crew roster for switcher search
+    const filteredCrew = allCrewMembers.filter((c) => {
         if (!switcherSearch) return true;
         const q = switcherSearch.toLowerCase().trim();
         return (
@@ -775,8 +1140,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
     useEffect(() => {
         try {
             const savedId = sessionStorage.getItem('nasa_active_astronaut_id');
-            if (savedId && savedId !== 'AST-00') {
-                const found = effectiveCrewList.find(
+            if (savedId) {
+                const found = allCrewMembers.find(
                     (c) => String(c.Astronaut ?? c.id) === savedId
                 );
                 if (found) {
@@ -1232,6 +1597,17 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             coreTemp={activeAstronaut.vitals.coreTemp.numericValue}
                             evaStatus={activeAstronaut.bio.evaStatus}
                             astronautName={activeAstronaut.bio.name}
+                            onSelectCharacter={(charKey) => {
+                                const found = allCrewMembers.find((c) => {
+                                    const idStr = String(c.Astronaut);
+                                    if (charKey === 'piccolo') return idStr.includes('PICCOLO');
+                                    if (charKey === 'frieren') return idStr.includes('FRIEREN');
+                                    return idStr.includes('LUFFY');
+                                });
+                                if (found) {
+                                    handleSelectAstronaut(found);
+                                }
+                            }}
                         />
                     </div>
 
