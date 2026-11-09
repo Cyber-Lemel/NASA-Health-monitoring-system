@@ -42,8 +42,8 @@ const DEFAULT_ASTRONAUT: AstronautFullData = {
     },
     vitals: {
         heartRate: {
-            title: 'ECG',
-            value: 'Heart Rate: 135 bpm',
+            title: 'HEART RATE (ECG)',
+            value: '135 bpm',
             numericValue: 135,
             unit: 'bpm',
             status: '(Elevated)',
@@ -52,7 +52,7 @@ const DEFAULT_ASTRONAUT: AstronautFullData = {
             baseline: '60 - 100 bpm',
         },
         spO2: {
-            title: 'SpO2',
+            title: 'SpO2 OXYGEN',
             value: '96%',
             numericValue: 96,
             unit: '%',
@@ -80,7 +80,7 @@ const DEFAULT_ASTRONAUT: AstronautFullData = {
             baseline: '12 - 20 bpm',
         },
         hydration: {
-            title: 'HYDRATION',
+            title: 'HYDRATION LEVEL',
             value: 'Low, 64%',
             numericValue: 64,
             unit: '%',
@@ -94,28 +94,28 @@ const DEFAULT_ASTRONAUT: AstronautFullData = {
         suitPressurePsi: 4.3,
         suitPressurePercent: 60,
         o2Percent: 21,
-        radiationStatus: 'Safe',
+        radiationStatus: 'Safe (0.18 mSv/h)',
         radiationPercent: 85,
         batteryPercent: 74,
     },
     alerts: [
         {
             level: 'WARNING',
-            title: 'INVASIVE: DEHYDRATION & THERMAL EXERTION (MODERATE)',
+            title: 'DEHYDRATION & THERMAL EXERTION (MODERATE)',
             actionsTaken: [
-                '[CHECKED] Liquid Cooling Garment (LCG) flow increased to HIGH.',
-                '[CHECKED] In-suit fluid pouch replenishment initiated (150mL electrolyte consumed).',
+                '[CHECKED] Liquid Cooling Garment (LCG) flow set to HIGH.',
+                '[CHECKED] In-suit fluid pouch consumption initiated (150mL electrolyte).',
             ],
-            recommendedAction: 'Resting interval required. Pause strenuous tasks.',
+            recommendedAction: 'Order 180s rest interval. Pause strenuous EVA tasks.',
         },
         {
             level: 'WARNING',
             title: 'ELEVATED METABOLIC RATE (HEART RATE > 130 BPM)',
             actionsTaken: [
-                '[CHECKED] Real-time biometrics streaming to Flight Surgeon Houston console.',
+                '[CHECKED] Real-time biometrics streaming to Flight Surgeon console.',
                 '[CHECKED] O2 flow rate bumped to 1.2 kg/hr nominal envelope.',
             ],
-            recommendedAction: 'Order crew member to hold station for 180 seconds until heart rate drops below 110 bpm.',
+            recommendedAction: 'Direct crew member to perform 180s controlled breathing cycle.',
         },
     ],
     logs: [
@@ -298,8 +298,8 @@ function generateAstronautProfile(record: any, timeStr: string): AstronautFullDa
         },
         vitals: {
             heartRate: {
-                title: 'ECG',
-                value: `Heart Rate: ${hr} bpm`,
+                title: 'HEART RATE (ECG)',
+                value: `${hr} bpm`,
                 numericValue: hr,
                 unit: 'bpm',
                 status: hrStatus,
@@ -308,7 +308,7 @@ function generateAstronautProfile(record: any, timeStr: string): AstronautFullDa
                 baseline: '60 - 100 bpm',
             },
             spO2: {
-                title: 'SpO2',
+                title: 'SpO2 OXYGEN',
                 value: `${spo2}%`,
                 numericValue: spo2,
                 unit: '%',
@@ -336,7 +336,7 @@ function generateAstronautProfile(record: any, timeStr: string): AstronautFullDa
                 baseline: '12 - 20 bpm',
             },
             hydration: {
-                title: 'HYDRATION',
+                title: 'HYDRATION LEVEL',
                 value: `${hydrationStatus}${hydrationPct}%`,
                 numericValue: hydrationPct,
                 unit: '%',
@@ -366,9 +366,6 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
     // Database crew roster
     const [crewList, setCrewList] = useState<any[]>(() => initialData?.records || []);
 
-    // Active Navigation Tab
-    const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'BIOMETRICS' | 'SUIT SYSTEMS' | 'MISSION LOGS' | 'SETTINGS'>('DASHBOARD');
-
     // Modals visibility
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -393,7 +390,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
     const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
     const [pressureUnit, setPressureUnit] = useState<'psi' | 'kPa'>('psi');
 
-    // Interactive alert checklist items state (tracked by key)
+    // Interactive alert checklist items state
     const [actionCheckedState, setActionCheckedState] = useState<Record<string, boolean>>({
         '0-0': true,
         '0-1': true,
@@ -404,7 +401,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
     // Live clock
     const [currentTimeStr, setCurrentTimeStr] = useState('13:45:10 UTC');
 
-    // Always keep activeAstronautRef synchronized
+    // Synchronize activeAstronautRef
     const activeAstronautRef = useRef(activeAstronaut);
     useEffect(() => {
         activeAstronautRef.current = activeAstronaut;
@@ -455,7 +452,6 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                 if (!tel) return;
 
                 const targetId = activeAstronautRef.current.bio.id;
-                // If ping explicitly targeted another astronaut, don't overwrite current astronaut's vitals
                 if (tel.astronaut_id && String(tel.astronaut_id) !== String(targetId)) {
                     return;
                 }
@@ -464,15 +460,14 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                 const spo2 = tel.oxygen_saturation || 98.0;
                 const temp = tel.core_temperature || 37.0;
                 const pressure = tel.suit_pressure || 4.3;
-                const rad = tel.radiation_rate ? `Safe (${tel.radiation_rate} mSv/h)` : 'Safe';
+                const rad = tel.radiation_rate ? `Safe (${tel.radiation_rate} mSv/h)` : 'Safe (0.18 mSv/h)';
                 const nowStr = new Date().toLocaleTimeString('en-US', { hour12: false });
 
                 setLastReverbPingTime(nowStr);
                 setIsReverbConnected(true);
 
-                // Update active astronaut live vitals
                 setActiveAstronaut((prev) => {
-                    const hrStatus = hr > 115 ? '(Elevated)' : hr > 100 ? '(Moderate Activity)' : '(Nominal)';
+                    const hrStatus = hr > 115 ? '(Elevated)' : hr > 100 ? '(Moderate)' : '(Nominal)';
                     const hrColor = hr > 115 ? '#ef4444' : hr > 100 ? '#f97316' : '#5cdbdf';
                     const tempStatus = temp > 37.8 ? '(Warm)' : '(Normal)';
                     const tempColor = temp > 37.8 ? '#f97316' : '#5cdbdf';
@@ -484,7 +479,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             heartRate: {
                                 ...prev.vitals.heartRate,
                                 numericValue: hr,
-                                value: `Heart Rate: ${hr} bpm`,
+                                value: `${hr} bpm`,
                                 status: hrStatus,
                                 color: hrColor,
                             },
@@ -515,7 +510,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                                 action: `[WS PING] HR: ${hr} bpm, SpO2: ${spo2}%, Core Temp: ${temp}°C`,
                                 status: 'RESOLVED',
                             },
-                            ...prev.logs.slice(0, 5),
+                            ...prev.logs.slice(0, 4),
                         ],
                     };
                 });
@@ -550,7 +545,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
             });
             const data = await res.json();
             if (data.success) {
-                toast.success(`Dispatched real-time ping for ${activeAstronaut.bio.name}`);
+                toast.success(`Telemetry ping sent for ${activeAstronaut.bio.name}`);
             }
         } catch {
             toast.error('Failed to dispatch Reverb ping');
@@ -615,7 +610,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
         }));
     };
 
-    // Effective crew roster (combines fallback if empty)
+    // Effective crew roster
     const effectiveCrewList = crewList && crewList.length > 0 ? crewList : DEFAULT_CREW_ROSTER;
 
     // Select astronaut from crew roster
@@ -623,7 +618,6 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
         const profile = generateAstronautProfile(record, currentTimeStr);
         setActiveAstronaut(profile);
 
-        // Reset checklists to verified for the new astronaut's alert items
         const initialChecks: Record<string, boolean> = {};
         profile.alerts.forEach((alert, aIdx) => {
             alert.actionsTaken.forEach((_, actIdx) => {
@@ -631,7 +625,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
             });
         });
         setActionCheckedState(initialChecks);
-        toast.info(`Switched Active Telemetry to: ${profile.bio.name} (${profile.bio.id})`);
+        toast.info(`Active Crew Member: ${profile.bio.name} (${profile.bio.id})`);
     };
 
     // Auto-select initial astronaut if dataset loaded
@@ -658,8 +652,8 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
             },
         }));
         setIsEvaSelectorOpen(false);
-        handleAddManualLog(`EVA Status Changed to ${status}`, `[MISSION CONTROL] Flight surgeon updated EVA operational state to ${status}`);
-        toast.info(`EVA Status updated to ${status}`);
+        handleAddManualLog(`EVA State Changed to ${status}`, `[FLIGHT SURGEON] Updated operational EVA state to ${status}`);
+        toast.info(`EVA Status: ${status}`);
     };
 
     // Toggle checklist item
@@ -674,126 +668,218 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
         toast.success(next ? `Acknowledged: ${label}` : `Action un-checked: ${label}`);
     };
 
-    // Acknowledge all alerts at once
-    const handleAcknowledgeAllAlerts = () => {
-        const allChecked: Record<string, boolean> = {};
-        activeAstronaut.alerts.forEach((alert, aIdx) => {
-            alert.actionsTaken.forEach((_, actIdx) => {
-                allChecked[`${aIdx}-${actIdx}`] = true;
-            });
-        });
-        setActionCheckedState(allChecked);
-        handleAddManualLog('All Alerts Acknowledged', '[FLIGHT SURGEON] All active biomedical condition checklists verified');
-        toast.success('All clinical alerts acknowledged');
-    };
-
     // Transmit directive to crew
     const handleTransmitDirective = (directiveText: string) => {
-        handleAddManualLog('Radio Transmission to Crew', `[VOX COMM] Sent directive: "${directiveText}"`);
-        toast.success(`Directive transmitted to ${activeAstronaut.bio.name} via Space-to-Ground Comm`);
+        handleAddManualLog('Radio Directive to Crew', `[VOX COMM] Sent: "${directiveText}"`);
+        toast.success(`Directive transmitted to ${activeAstronaut.bio.name}`);
     };
 
     // Diagnostics progress bar click test
     const handleDiagnoseSubsystem = (subsystemName: string) => {
-        handleAddManualLog(`${subsystemName} Diagnostic Check`, `[SYSTEM] Subsystem integrity test executed: 100% NOMINAL`);
-        toast.info(`Running automated self-test on ${subsystemName}... Status: NOMINAL`);
+        handleAddManualLog(`${subsystemName} Diagnostic Check`, `[SYSTEM] Subsystem test executed: 100% NOMINAL`);
+        toast.info(`Self-test on ${subsystemName}: NOMINAL`);
     };
 
     return (
-        <div className="min-h-screen bg-[#030b14] text-[#5cdbdf] font-mono p-3 sm:p-5 pb-28 sm:pb-32 flex flex-col gap-4 select-none relative overflow-x-hidden">
-            {/* Background cosmic glow and coordinate grid */}
+        <div className="min-h-screen bg-[#030914] text-slate-200 font-sans p-3 sm:p-4 pb-24 sm:pb-28 flex flex-col gap-3 select-none relative overflow-x-hidden">
+            {/* Subtle Cosmic Background Lighting */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#0b3d91]/15 rounded-full blur-[160px]" />
-                <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#0284c7]/10 rounded-full blur-[170px]" />
-                <div className="absolute bottom-0 right-10 w-[400px] h-[400px] bg-[#5cdbdf]/5 rounded-full blur-[140px]" />
+                <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#0b3d91]/15 rounded-full blur-[140px]" />
+                <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-[#0284c7]/10 rounded-full blur-[150px]" />
                 <div
-                    className="absolute inset-0 opacity-[0.035]"
+                    className="absolute inset-0 opacity-[0.03]"
                     style={{
                         backgroundImage:
                             'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
+                        backgroundSize: '36px 36px',
                     }}
                 />
             </div>
 
-            {/* TOP COMMAND HEADER: Unified NASA AHMS Command Bar */}
-            <header className="relative z-30 border border-[#1a4b6c] bg-[#06121e]/95 p-3 sm:p-3.5 backdrop-blur-md">
-                {/* Tech Reticles */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#5cdbdf]" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#5cdbdf]" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#5cdbdf]" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#5cdbdf]" />
+            {/* MASTER MISSION CONTROL COMMAND BAR (All navigation, status & actions consolidated into 1 clean bar) */}
+            <header className="relative z-30 rounded-xl border border-[#132c4a] bg-[#06121e]/95 px-3.5 py-2.5 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shadow-xl">
+                {/* Left: Brand + Active Crew Chip */}
+                <div className="flex items-center gap-3">
+                    <div className="p-1 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] shadow-md shadow-[#5cdbdf]/10 shrink-0">
+                        <NasaLogo size={26} />
+                    </div>
 
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-                    {/* Left: Brand & Mission Identity */}
-                    <div className="flex items-center gap-3">
-                        <div className="p-1.5 border border-[#1a4b6c] bg-[#0a1f2e] shadow-[0_0_12px_rgba(92,219,223,0.2)] shrink-0">
-                            <NasaLogo size={32} />
+                    <div>
+                        <div className="flex items-center gap-1.5 font-mono">
+                            <span className="font-bold text-white text-xs sm:text-sm tracking-wider">NASA AHMS</span>
+                            <span className="text-[10px] text-cyan-400 font-bold hidden sm:inline">// HUD</span>
                         </div>
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h1 className="text-base sm:text-lg font-bold tracking-wider text-white">
-                                    NASA AHMS <span className="text-[#5cdbdf]">// MISSION CONTROL HUD</span>
-                                </h1>
-                                <span className="px-1.5 py-0.2 text-[9px] tracking-widest border border-cyan-800/80 bg-cyan-950/60 text-cyan-300">
-                                    HRP LEVEL-4
-                                </span>
+                    </div>
+
+                    <div className="h-5 w-px bg-[#132c4a] hidden sm:block mx-1" />
+
+                    {/* Active Crew Quick Selector Chip */}
+                    <button
+                        type="button"
+                        onClick={() => setIsCrewSwitcherOpen(true)}
+                        className="flex items-center gap-2 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] hover:border-[#5cdbdf] px-2.5 py-1 text-xs text-white transition-all cursor-pointer group shadow-sm"
+                        title="Click to Switch Crew Member"
+                    >
+                        <div className="w-5 h-5 rounded bg-[#132c4a] flex items-center justify-center text-[10px] text-[#5cdbdf] font-mono font-bold group-hover:bg-[#5cdbdf] group-hover:text-black transition-colors">
+                            {activeAstronaut.bio.name.charAt(0)}
+                        </div>
+                        <span className="font-bold text-xs truncate max-w-[120px] sm:max-w-[170px]">{activeAstronaut.bio.name}</span>
+                        <span className="text-[10px] text-[#5cdbdf] font-mono">({activeAstronaut.bio.id})</span>
+                        <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-white" />
+                    </button>
+
+                    {/* EVA Status Selector */}
+                    <div className="relative" ref={evaSelectorRef}>
+                        <button
+                            type="button"
+                            onClick={() => setIsEvaSelectorOpen(!isEvaSelectorOpen)}
+                            className="flex items-center gap-1.5 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] hover:border-[#5cdbdf] px-2.5 py-1 text-xs transition-all cursor-pointer"
+                            title="Update EVA Operational State"
+                        >
+                            <span className={`w-2 h-2 rounded-full ${
+                                activeAstronaut.bio.evaStatus === 'ON-GOING'
+                                    ? 'bg-amber-400 animate-pulse'
+                                    : activeAstronaut.bio.evaStatus === 'ABORTED'
+                                    ? 'bg-rose-500'
+                                    : 'bg-emerald-400'
+                            }`} />
+                            <span className="text-[11px] text-slate-200 font-mono font-bold">{activeAstronaut.bio.evaStatus}</span>
+                            <ChevronDown className="w-3 h-3 text-slate-400" />
+                        </button>
+
+                        {/* EVA Dropdown */}
+                        {isEvaSelectorOpen && (
+                            <div className="absolute top-full left-0 mt-1 w-40 rounded-lg bg-[#06121e] border border-[#1a4b6c] shadow-2xl z-50 p-1 flex flex-col font-mono text-xs divide-y divide-[#132c4a]">
+                                {(['ON-GOING', 'STANDBY', 'SCHEDULED', 'COMPLETED', 'ABORTED'] as const).map((st) => (
+                                    <button
+                                        key={st}
+                                        type="button"
+                                        onClick={() => handleSetEvaStatus(st)}
+                                        className="text-left px-2.5 py-1.5 hover:bg-[#0a1f2e] text-slate-300 hover:text-white transition-colors cursor-pointer text-[11px]"
+                                    >
+                                        {st}
+                                    </button>
+                                ))}
                             </div>
-                            <p className="text-[11px] text-slate-400 tracking-wider">
-                                BIOASTRONAUTICS TELEMETRY & OPERATIONS • EXPEDITION 71
-                            </p>
-                        </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Center: Clean Spaceflight Telemetry Status Strip */}
+                <div className="hidden lg:flex items-center gap-3 text-[11px] font-mono bg-[#030b14]/90 border border-[#132c4a] rounded-lg px-3 py-1">
+                    <div className="flex items-center gap-1.5 text-white">
+                        <Clock className="w-3.5 h-3.5 text-[#5cdbdf]" />
+                        <span>{currentTimeStr}</span>
+                    </div>
+                    <span className="text-slate-600">•</span>
+                    <div className="flex items-center gap-1.5 text-emerald-400">
+                        <Radio className="w-3.5 h-3.5 animate-pulse" />
+                        <span>DSN: LOCKED (40ms)</span>
+                    </div>
+                    <span className="text-slate-600">•</span>
+                    <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>WS: REVERB (8080)</span>
+                    </div>
+                </div>
+
+                {/* Right: Consolidated Console Modals & System Tools */}
+                <div className="flex items-center gap-2 text-xs font-mono">
+                    {/* Console Views Group */}
+                    <div className="flex items-center rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] p-0.5">
+                        <button
+                            type="button"
+                            onClick={() => setIsBiometricsModalOpen(true)}
+                            className="px-2 py-1 rounded text-slate-300 hover:text-white hover:bg-[#132c4a] transition-colors text-[11px] flex items-center gap-1"
+                            title="Detailed Biometrics Analysis"
+                        >
+                            <Heart className="w-3 h-3 text-[#5cdbdf]" />
+                            <span className="hidden xl:inline">Biometrics</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsSuitModalOpen(true)}
+                            className="px-2 py-1 rounded text-slate-300 hover:text-white hover:bg-[#132c4a] transition-colors text-[11px] flex items-center gap-1"
+                            title="Suit & Environmental Console"
+                        >
+                            <Shield className="w-3 h-3 text-[#5cdbdf]" />
+                            <span className="hidden xl:inline">Suit</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsLogsModalOpen(true)}
+                            className="px-2 py-1 rounded text-slate-300 hover:text-white hover:bg-[#132c4a] transition-colors text-[11px] flex items-center gap-1"
+                            title="Full Mission Event Logs"
+                        >
+                            <ClipboardList className="w-3 h-3 text-[#5cdbdf]" />
+                            <span className="hidden xl:inline">Logs</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsSettingsModalOpen(true)}
+                            className="p-1 rounded text-slate-300 hover:text-white hover:bg-[#132c4a] transition-colors"
+                            title="System Settings"
+                        >
+                            <Settings className="w-3 h-3 text-[#5cdbdf]" />
+                        </button>
                     </div>
 
-                    {/* Center: Live Telemetry Status Cluster */}
-                    <div className="flex items-center gap-3 text-[11px] bg-[#030b14]/90 border border-[#1a4b6c]/60 px-3 py-1.5 shrink-0">
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                            <span className="text-slate-400">TIME:</span>
-                            <span className="text-white font-bold tracking-widest">{currentTimeStr}</span>
-                        </div>
-                        <span className="text-slate-600">|</span>
-                        <div className="flex items-center gap-1.5">
-                            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                            <span className="text-slate-400">DSN:</span>
-                            <span className="text-emerald-400 font-bold">LOCKED // 40-MS</span>
-                        </div>
-                        <span className="text-slate-600 hidden md:inline">|</span>
-                        <div className="hidden md:flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                            <span className="text-slate-400">REVERB:</span>
-                            <span className="text-emerald-400 font-bold">{isReverbConnected ? 'ACTIVE' : 'STANDBY'}</span>
-                        </div>
-                    </div>
-
-                    {/* Right: Integrated System Action Toolbar */}
-                    <div className="flex items-center gap-2 text-xs shrink-0 flex-wrap sm:flex-nowrap">
+                    {/* System Action Tools */}
+                    <div className="flex items-center gap-1">
                         <Link
                             href="/dataset"
-                            className="border border-[#1a4b6c] bg-[#0a1f2e] text-[#5cdbdf] px-3 py-1.5 text-xs tracking-wider uppercase hover:bg-[#0b3d91]/30 hover:border-[#5cdbdf] hover:text-white transition-all flex items-center gap-1.5 font-bold shadow-[0_0_10px_rgba(92,219,223,0.1)] shrink-0"
+                            className="p-1.5 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] text-[#5cdbdf] hover:border-[#5cdbdf] hover:text-white transition-all shadow-sm"
+                            title="Open Kaggle Dataset Archive"
                         >
                             <Database className="w-3.5 h-3.5" />
-                            <span>DATASET ARCHIVE</span>
                         </Link>
 
                         <button
                             type="button"
                             onClick={() => setIsImportModalOpen(true)}
-                            className="border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:text-[#5cdbdf] hover:border-[#5cdbdf] px-2.5 py-1.5 text-xs tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                            title="Import Telemetry into Database & HUD"
+                            className="p-1.5 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:border-[#5cdbdf] hover:text-white transition-all cursor-pointer shadow-sm"
+                            title="Import Telemetry Records"
                         >
                             <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>IMPORT</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setIsExportModalOpen(true)}
-                            className="border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:text-[#5cdbdf] hover:border-[#5cdbdf] px-2.5 py-1.5 text-xs tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                            title="Export Mission Telemetry"
+                            className="p-1.5 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:border-[#5cdbdf] hover:text-white transition-all cursor-pointer shadow-sm"
+                            title="Export Telemetry Data"
                         >
                             <Download className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>EXPORT</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleTriggerReverbPing}
+                            disabled={isPingingReverb}
+                            className="p-1.5 rounded-lg border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:border-[#5cdbdf] hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                            title="Dispatch Instant Telemetry Ping"
+                        >
+                            <Zap className="w-3.5 h-3.5 text-[#5cdbdf]" />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const next = !isAutoLiveStream;
+                                setIsAutoLiveStream(next);
+                                toast.info(next ? 'Live Reverb stream: ACTIVE (3s cadence)' : 'Live stream: PAUSED');
+                            }}
+                            className={`p-1.5 rounded-lg border transition-all cursor-pointer shadow-sm ${
+                                isAutoLiveStream
+                                    ? 'border-emerald-400 bg-emerald-950 text-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.3)]'
+                                    : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-white hover:border-[#5cdbdf]'
+                            }`}
+                            title={isAutoLiveStream ? 'Continuous Auto-Stream is ON' : 'Turn Continuous Auto-Stream ON'}
+                        >
+                            <Radio className={`w-3.5 h-3.5 ${isAutoLiveStream ? 'animate-pulse text-emerald-400' : ''}`} />
                         </button>
 
                         <Link
@@ -801,261 +887,53 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             method="post"
                             as="button"
                             type="button"
-                            className="border border-red-900/60 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-500 px-2.5 py-1.5 text-xs tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                            className="p-1.5 rounded-lg border border-red-900/60 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer"
                             title="Terminate Flight Surgeon Session"
                         >
                             <LogOut className="w-3.5 h-3.5" />
-                            <span>TERMINATE</span>
                         </Link>
                     </div>
                 </div>
             </header>
 
-            {/* SECONDARY TOOLBAR: Navigation Tabs & Telemetry Controls */}
-            <div className="relative z-25 border border-[#1a4b6c] bg-[#06121e]/90 p-2.5 backdrop-blur-md flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
-                {/* Console Navigation Tabs */}
-                <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('DASHBOARD')}
-                        className={`px-3 py-1.5 border transition-all cursor-pointer font-bold flex items-center gap-1.5 text-xs tracking-wider ${
-                            activeTab === 'DASHBOARD'
-                                ? 'border-[#5cdbdf] bg-[#0a1f2e] text-white shadow-[0_0_10px_rgba(92,219,223,0.2)]'
-                                : 'border-transparent text-slate-400 hover:text-white hover:border-[#1a4b6c]'
-                        }`}
-                    >
-                        <Activity className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>DASHBOARD</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveTab('BIOMETRICS');
-                            setIsBiometricsModalOpen(true);
-                        }}
-                        className={`px-3 py-1.5 border transition-all cursor-pointer font-bold flex items-center gap-1.5 text-xs tracking-wider ${
-                            activeTab === 'BIOMETRICS'
-                                ? 'border-[#5cdbdf] bg-[#0a1f2e] text-white'
-                                : 'border-transparent text-slate-400 hover:text-white hover:border-[#1a4b6c]'
-                        }`}
-                    >
-                        <Heart className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>BIOMETRICS</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveTab('SUIT SYSTEMS');
-                            setIsSuitModalOpen(true);
-                        }}
-                        className={`px-3 py-1.5 border transition-all cursor-pointer font-bold flex items-center gap-1.5 text-xs tracking-wider ${
-                            activeTab === 'SUIT SYSTEMS'
-                                ? 'border-[#5cdbdf] bg-[#0a1f2e] text-white'
-                                : 'border-transparent text-slate-400 hover:text-white hover:border-[#1a4b6c]'
-                        }`}
-                    >
-                        <Shield className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>SUIT SYSTEMS</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveTab('MISSION LOGS');
-                            setIsLogsModalOpen(true);
-                        }}
-                        className={`px-3 py-1.5 border transition-all cursor-pointer font-bold flex items-center gap-1.5 text-xs tracking-wider ${
-                            activeTab === 'MISSION LOGS'
-                                ? 'border-[#5cdbdf] bg-[#0a1f2e] text-white'
-                                : 'border-transparent text-slate-400 hover:text-white hover:border-[#1a4b6c]'
-                        }`}
-                    >
-                        <ClipboardList className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>MISSION LOGS</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveTab('SETTINGS');
-                            setIsSettingsModalOpen(true);
-                        }}
-                        className={`px-3 py-1.5 border transition-all cursor-pointer font-bold flex items-center gap-1.5 text-xs tracking-wider ${
-                            activeTab === 'SETTINGS'
-                                ? 'border-[#5cdbdf] bg-[#0a1f2e] text-white'
-                                : 'border-transparent text-slate-400 hover:text-white hover:border-[#1a4b6c]'
-                        }`}
-                    >
-                        <Settings className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>SETTINGS</span>
-                    </button>
-                </nav>
-
-                {/* Right: Live Stream & Reverb Ping Controls */}
-                <div className="flex flex-wrap items-center gap-2">
-                    {/* Live Reverb Trigger Ping */}
-                    <button
-                        type="button"
-                        onClick={handleTriggerReverbPing}
-                        disabled={isPingingReverb}
-                        title="Dispatch instant real-time telemetry ping across Reverb WebSocket"
-                        className="flex items-center gap-1.5 border border-[#1a4b6c] bg-[#0a1f2e] text-slate-300 hover:text-white hover:border-[#5cdbdf] px-3 py-1.5 text-xs tracking-wider uppercase transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                        <Zap className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>{isPingingReverb ? 'PINGING...' : 'PING REVERB'}</span>
-                    </button>
-
-                    {/* Continuous Auto-Stream Toggle */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const next = !isAutoLiveStream;
-                            setIsAutoLiveStream(next);
-                            toast.info(next ? 'Continuous live Reverb stream ACTIVE (3s cadence)' : 'Continuous live stream PAUSED');
-                        }}
-                        className={`flex items-center gap-1.5 border px-3 py-1.5 text-xs tracking-wider uppercase transition-colors cursor-pointer ${
-                            isAutoLiveStream
-                                ? 'border-emerald-400 bg-emerald-950/80 text-emerald-300 font-bold shadow-[0_0_10px_rgba(52,211,153,0.3)]'
-                                : 'border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-white hover:border-[#5cdbdf]'
-                        }`}
-                    >
-                        <Radio className={`w-3.5 h-3.5 ${isAutoLiveStream ? 'animate-pulse text-emerald-400' : ''}`} />
-                        <span>AUTO-STREAM: {isAutoLiveStream ? 'ON' : 'OFF'}</span>
-                    </button>
-
-                    {/* Audio Alert Toggle */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const next = !isAudioAlertsEnabled;
-                            setIsAudioAlertsEnabled(next);
-                            toast.info(next ? 'Telemetry audio alarms enabled' : 'Telemetry audio alarms muted');
-                        }}
-                        className={`p-1.5 border border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-[#5cdbdf] hover:border-[#5cdbdf] transition-colors cursor-pointer`}
-                        title={isAudioAlertsEnabled ? 'Mute Telemetry Audio' : 'Enable Telemetry Audio'}
-                    >
-                        {isAudioAlertsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                    </button>
-                </div>
-            </div>
-
-            {/* ACTIVE CREW MEMBER & EVA OPERATIONAL BANNER */}
-            <div className="relative z-20 border border-[#1a4b6c] bg-gradient-to-r from-[#06121e] via-[#0a1f2e] to-[#06121e] p-3 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-                {/* Left: Active Astronaut Profile Details */}
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 border border-[#1a4b6c] bg-[#030b14] flex items-center justify-center text-[#5cdbdf] font-bold text-base shadow-[0_0_10px_rgba(92,219,223,0.2)] shrink-0">
-                        {activeAstronaut.bio.name.charAt(0)}
-                    </div>
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-bold text-white text-sm tracking-wide">
-                                {activeAstronaut.bio.name}
-                            </span>
-                            <span className="px-1.5 py-0.2 border border-[#5cdbdf]/60 bg-[#5cdbdf]/10 text-[#5cdbdf] text-[10px] font-bold">
-                                {activeAstronaut.bio.id}
-                            </span>
-                            <span className="text-slate-400 text-xs">• {activeAstronaut.bio.role}</span>
-                            <span className="text-slate-400 text-xs">• {activeAstronaut.bio.country}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-400 flex flex-wrap items-center gap-3 mt-0.5">
-                            <span>MISSION: <strong className="text-white">{activeAstronaut.bio.mission}</strong></span>
-                            <span>•</span>
-                            <span>DURATION: <strong className="text-sky-300">{activeAstronaut.bio.missionDurationDays} Days</strong></span>
-                            <span>•</span>
-                            <span>BMD LOSS: <strong className="text-rose-400">{activeAstronaut.bio.boneDensityLoss}</strong></span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right: EVA Status Selector & Switch Crew Trigger */}
-                <div className="flex flex-wrap items-center gap-2.5">
-                    {/* Functional EVA Status Dropdown Selector */}
-                    <div className="relative z-30" ref={evaSelectorRef}>
-                        <button
-                            type="button"
-                            onClick={() => setIsEvaSelectorOpen(!isEvaSelectorOpen)}
-                            className="border border-[#1a4b6c] px-3 py-1.5 bg-[#030b14] text-xs flex items-center gap-2 hover:border-[#5cdbdf] transition-colors cursor-pointer"
-                        >
-                            <span className="text-slate-400">EVA STATUS:</span>
-                            <span className={`font-bold ${
-                                activeAstronaut.bio.evaStatus === 'ON-GOING'
-                                    ? 'text-orange-400 animate-pulse'
-                                    : activeAstronaut.bio.evaStatus === 'ABORTED'
-                                    ? 'text-red-500'
-                                    : 'text-emerald-400'
-                            }`}>
-                                {activeAstronaut.bio.evaStatus}
-                            </span>
-                            <ChevronDown className="w-3 h-3 text-slate-400" />
-                        </button>
-
-                        {/* EVA Status Selector Menu */}
-                        {isEvaSelectorOpen && (
-                            <div className="absolute top-full right-0 mt-1 w-44 bg-[#06121e] border border-[#1a4b6c] shadow-[0_15px_35px_rgba(0,0,0,0.95)] z-50 p-1 flex flex-col divide-y divide-[#1a4b6c]/40 text-xs">
-                                {(['ON-GOING', 'STANDBY', 'SCHEDULED', 'COMPLETED', 'ABORTED'] as const).map((st) => (
-                                    <button
-                                        key={st}
-                                        type="button"
-                                        onClick={() => handleSetEvaStatus(st)}
-                                        className="text-left px-3 py-2 hover:bg-[#0a1f2e] text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center justify-between"
-                                    >
-                                        <span>{st}</span>
-                                        {activeAstronaut.bio.evaStatus === st && (
-                                            <Check className="w-3 h-3 text-[#5cdbdf]" />
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Switch Astronaut Trigger - Opens Dedicated CrewSwitcherModal */}
-                    <button
-                        type="button"
-                        onClick={() => setIsCrewSwitcherOpen(true)}
-                        className="flex items-center gap-2 border border-[#1a4b6c] bg-[#030b14] px-3.5 py-1.5 text-xs text-slate-200 hover:text-[#5cdbdf] hover:border-[#5cdbdf] transition-all cursor-pointer font-bold tracking-wider"
-                        title="Switch active astronaut telemetry profile"
-                    >
-                        <Users className="w-3.5 h-3.5 text-[#5cdbdf]" />
-                        <span>SWITCH ASTRONAUT</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* MAIN HUD 3-COLUMN COCKPIT GRID */}
-            <div className="relative z-10 grid grid-cols-12 gap-4 flex-1">
-                {/* LEFT COLUMN: Biometrics & Telemetry Waveforms */}
-                <div className="col-span-12 xl:col-span-3 flex flex-col gap-3">
-                    <div className="border border-[#1a4b6c] bg-[#06121e]/90 p-3 flex flex-col h-full">
-                        <div className="flex items-center justify-between border-b border-[#1a4b6c] pb-2 mb-3">
+            {/* MAIN 3-COLUMN MISSION CONTROL COCKPIT */}
+            <div className="relative z-10 grid grid-cols-12 gap-3.5 flex-1">
+                {/* ------------------------------------------------------------- */}
+                {/* LEFT COLUMN: Biometrics Telemetry & Real-Time Rhythms         */}
+                {/* ------------------------------------------------------------- */}
+                <div className="col-span-12 lg:col-span-3 flex flex-col gap-3">
+                    <div className="rounded-xl border border-[#132c4a] bg-[#06121e]/95 p-3.5 flex flex-col h-full shadow-lg">
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between border-b border-[#132c4a] pb-2.5 mb-3 font-mono">
                             <div className="flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-[#5cdbdf]" />
-                                <h2 className="text-xs font-bold tracking-wider text-white">BIOMETRICS & VITALS</h2>
+                                <h2 className="text-xs font-bold tracking-wider text-white">BIOMETRICS TELEMETRY</h2>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsBiometricsModalOpen(true)}
-                                className="text-[10px] text-[#5cdbdf] hover:underline cursor-pointer flex items-center gap-1"
+                                className="text-[10px] text-cyan-400 hover:text-cyan-300 cursor-pointer flex items-center gap-1"
                             >
-                                <span>Deep Telemetry</span>
-                                <Expand className="w-3 h-3" />
+                                <span>Deep View</span>
+                                <ArrowUpRight className="w-3 h-3" />
                             </button>
                         </div>
 
-                        {/* Waveform Vital Cards */}
-                        <div className="flex flex-col gap-3 flex-1 justify-between">
+                        {/* Vitals Stack */}
+                        <div className="flex flex-col gap-2.5 flex-1 justify-between font-mono">
+                            {/* Primary Featured: Heart Rate ECG */}
                             <VitalCard
                                 title={activeAstronaut.vitals.heartRate.title}
                                 value={activeAstronaut.vitals.heartRate.value}
                                 status={activeAstronaut.vitals.heartRate.status}
                                 color={activeAstronaut.vitals.heartRate.color}
                                 type="ecg"
+                                isPrimary
                                 baseline="Baseline: 60 - 100 bpm"
                                 onClick={() => setIsBiometricsModalOpen(true)}
                             />
 
+                            {/* Secondary Metrics */}
                             <VitalCard
                                 title={activeAstronaut.vitals.spO2.title}
                                 value={activeAstronaut.vitals.spO2.value}
@@ -1098,10 +976,11 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                     </div>
                 </div>
 
-                {/* CENTER COLUMN: 3D Holographic Scanner & Active Alerts Side-By-Side */}
-                <div className="col-span-12 xl:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {/* Left Center: 3D Biomechanical Scanner */}
-                    <div className="min-h-[460px] flex flex-col">
+                {/* ------------------------------------------------------------- */}
+                {/* CENTER COLUMN: 3D Holographic Biomechanical Scanner (The Hero)*/}
+                {/* ------------------------------------------------------------- */}
+                <div className="col-span-12 lg:col-span-6 flex flex-col">
+                    <div className="rounded-xl border border-[#132c4a] bg-[#06121e]/95 p-1 relative overflow-hidden flex flex-col flex-1 min-h-[480px] shadow-lg">
                         <Astronaut3DModel
                             heartRate={activeAstronaut.vitals.heartRate.numericValue}
                             coreTemp={activeAstronaut.vitals.coreTemp.numericValue}
@@ -1109,125 +988,102 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             astronautName={activeAstronaut.bio.name}
                         />
                     </div>
-
-                    {/* Right Center: Active Clinical Alerts & Directives */}
-                    <div className="border border-[#1a4b6c] bg-[#06121e]/90 p-3.5 relative flex flex-col justify-between min-h-[460px]">
-                        {/* Tech Reticles */}
-                        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-[#5cdbdf]" />
-                        <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-[#5cdbdf]" />
-                        <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-[#5cdbdf]" />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-[#5cdbdf]" />
-
-                        <div>
-                            <div className="flex items-center justify-between border-b border-[#1a4b6c] pb-2 mb-3">
-                                <div className="flex items-center gap-2">
-                                    <AlertTriangle className="w-4 h-4 text-amber-400" />
-                                    <h2 className="text-xs font-bold tracking-wider text-white">ACTIVE ALERTS & PROTOCOLS</h2>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-950 text-amber-300 border border-amber-800">
-                                        {activeAstronaut.alerts.length}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={handleAcknowledgeAllAlerts}
-                                        className="text-[10px] text-[#5cdbdf] hover:underline cursor-pointer"
-                                    >
-                                        Verify All
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                {activeAstronaut.alerts.map((alert, alertIdx) => {
-                                    const isCritical = alert.level === 'CRITICAL' || alert.level === 'WARNING';
-                                    return (
-                                        <div
-                                            key={alertIdx}
-                                            className={`border p-3 text-xs space-y-2.5 transition-all ${
-                                                isCritical
-                                                    ? 'border-amber-500/50 bg-[#1a1205]'
-                                                    : 'border-[#1a4b6c] bg-[#0a1f2e]'
-                                            }`}
-                                        >
-                                            <div className={`font-bold border-b pb-1.5 flex items-center justify-between ${
-                                                isCritical
-                                                    ? 'text-amber-400 border-amber-500/30'
-                                                    : 'text-[#5cdbdf] border-[#1a4b6c]'
-                                            }`}>
-                                                <span className="tracking-wide text-[11px] leading-tight">{alert.title}</span>
-                                                {isCritical && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 ml-1" />}
-                                            </div>
-
-                                            {/* Action Checklist */}
-                                            <div className="space-y-1.5 text-[11px]">
-                                                <div className="text-slate-400 text-[10px]">VERIFIED MEDICAL PROTOCOLS:</div>
-                                                {alert.actionsTaken.map((act, actIdx) => {
-                                                    const itemKey = `${alertIdx}-${actIdx}`;
-                                                    const isChecked = actionCheckedState[itemKey] ?? true;
-                                                    return (
-                                                        <div
-                                                            key={actIdx}
-                                                            onClick={() => handleToggleChecklist(itemKey, act)}
-                                                            className="flex items-start gap-2 text-slate-300 hover:text-white cursor-pointer group transition-colors"
-                                                        >
-                                                            {isChecked ? (
-                                                                <CheckSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                                                            ) : (
-                                                                <Square className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 shrink-0 mt-0.5" />
-                                                            )}
-                                                            <span className={isChecked ? 'text-slate-200' : 'text-slate-500 line-through'}>
-                                                                {act}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {/* Directive Transmission */}
-                                            <div className="pt-2 border-t border-[#1a4b6c]/50 space-y-1.5">
-                                                <div className="text-[10px] text-slate-400 leading-snug">
-                                                    ACTION: <strong className="text-white">{alert.recommendedAction}</strong>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleTransmitDirective(alert.recommendedAction)}
-                                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 border border-[#5cdbdf] bg-[#0a1f2e] text-[#5cdbdf] hover:bg-[#5cdbdf] hover:text-slate-950 transition-all cursor-pointer text-[10px] font-bold tracking-wider"
-                                                >
-                                                    <Send className="w-3 h-3" />
-                                                    <span>TRANSMIT DIRECTIVE TO CREW</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                {/* RIGHT COLUMN: Suit Diagnostics & Incident Response History */}
-                <div className="col-span-12 xl:col-span-3 flex flex-col gap-4">
-                    {/* Environmental & EMU Suit Diagnostics */}
-                    <div className="border border-[#1a4b6c] bg-[#06121e]/90 p-3.5">
-                        <div className="flex items-center justify-between border-b border-[#1a4b6c] pb-2 mb-3">
-                            <div className="flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-[#5cdbdf]" />
-                                <h2 className="text-xs font-bold tracking-wider text-white">SUIT & LIFE SUPPORT</h2>
+                {/* ------------------------------------------------------------- */}
+                {/* RIGHT COLUMN: Clinical Alerts, Suit Systems & Incident Events  */}
+                {/* ------------------------------------------------------------- */}
+                <div className="col-span-12 lg:col-span-3 flex flex-col gap-3 font-mono">
+                    {/* Active Clinical Conditions & Directives */}
+                    <div className="rounded-xl border border-[#132c4a] bg-[#06121e]/95 p-3 shadow-lg">
+                        <div className="flex items-center justify-between border-b border-[#132c4a] pb-2 mb-2.5">
+                            <div className="flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                <h2 className="text-xs font-bold tracking-wider text-white">CLINICAL ALERTS</h2>
+                            </div>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-950/80 text-amber-300 border border-amber-800">
+                                {activeAstronaut.alerts.length} ACTIVE
+                            </span>
+                        </div>
+
+                        <div className="space-y-2.5 max-h-[170px] overflow-y-auto pr-1">
+                            {activeAstronaut.alerts.map((alert, alertIdx) => {
+                                const isCritical = alert.level === 'CRITICAL' || alert.level === 'WARNING';
+                                return (
+                                    <div
+                                        key={alertIdx}
+                                        className={`rounded-lg border p-2.5 text-xs space-y-2 ${
+                                            isCritical
+                                                ? 'border-amber-500/40 bg-amber-950/20'
+                                                : 'border-[#132c4a] bg-[#0a1f2e]'
+                                        }`}
+                                    >
+                                        <div className={`font-bold flex items-center justify-between text-[11px] ${
+                                            isCritical ? 'text-amber-400' : 'text-[#5cdbdf]'
+                                        }`}>
+                                            <span className="truncate">{alert.title}</span>
+                                            {isCritical && <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0 ml-1" />}
+                                        </div>
+
+                                        {/* Action Checklist */}
+                                        <div className="space-y-1 text-[10px]">
+                                            {alert.actionsTaken.map((act, actIdx) => {
+                                                const itemKey = `${alertIdx}-${actIdx}`;
+                                                const isChecked = actionCheckedState[itemKey] ?? true;
+                                                return (
+                                                    <div
+                                                        key={actIdx}
+                                                        onClick={() => handleToggleChecklist(itemKey, act)}
+                                                        className="flex items-start gap-1.5 text-slate-300 hover:text-white cursor-pointer group"
+                                                    >
+                                                        {isChecked ? (
+                                                            <CheckSquare className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                                                        ) : (
+                                                            <Square className="w-3 h-3 text-slate-500 shrink-0 mt-0.5" />
+                                                        )}
+                                                        <span className={isChecked ? 'text-slate-300' : 'text-slate-500 line-through'}>
+                                                            {act}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Directive Transmission */}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleTransmitDirective(alert.recommendedAction)}
+                                            className="w-full flex items-center justify-center gap-1.5 py-1 px-2.5 rounded bg-[#0a1f2e] border border-[#5cdbdf] text-[#5cdbdf] hover:bg-[#5cdbdf] hover:text-black transition-all cursor-pointer text-[10px] font-bold"
+                                        >
+                                            <Send className="w-2.5 h-2.5" />
+                                            <span>TRANSMIT DIRECTIVE</span>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Suit & Environmental Life Support */}
+                    <div className="rounded-xl border border-[#132c4a] bg-[#06121e]/95 p-3 shadow-lg">
+                        <div className="flex items-center justify-between border-b border-[#132c4a] pb-2 mb-2.5">
+                            <div className="flex items-center gap-1.5">
+                                <Shield className="w-3.5 h-3.5 text-[#5cdbdf]" />
+                                <h2 className="text-xs font-bold tracking-wider text-white">SUIT LIFE SUPPORT</h2>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsSuitModalOpen(true)}
-                                className="text-[10px] text-[#5cdbdf] hover:underline cursor-pointer flex items-center gap-1"
+                                className="text-[10px] text-cyan-400 hover:underline cursor-pointer flex items-center gap-0.5"
                             >
-                                <span>Control Console</span>
+                                <span>Console</span>
                                 <ArrowUpRight className="w-3 h-3" />
                             </button>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-2.5">
                             <ProgressBar
-                                label="SUIT PRESSURE (PLSS)"
+                                label="SUIT PRESSURE"
                                 value={`${activeAstronaut.diagnostics.suitPressurePsi} psi`}
                                 percent={activeAstronaut.diagnostics.suitPressurePercent}
                                 color="bg-[#5cdbdf]"
@@ -1237,18 +1093,18 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                                 label="O2 RESERVES"
                                 value={`${activeAstronaut.diagnostics.o2Percent}%`}
                                 percent={activeAstronaut.diagnostics.o2Percent}
-                                color="bg-orange-400"
+                                color="bg-amber-400"
                                 onClick={() => handleDiagnoseSubsystem('O2 Reserve Canister')}
                             />
                             <ProgressBar
-                                label="RADIATION DOSIMETRY"
+                                label="DOSIMETRY"
                                 value={activeAstronaut.diagnostics.radiationStatus}
                                 percent={activeAstronaut.diagnostics.radiationPercent}
                                 color="bg-emerald-400"
                                 onClick={() => handleDiagnoseSubsystem('Radiation Shielding Array')}
                             />
                             <ProgressBar
-                                label="BATTERY CELL CAPACITY"
+                                label="BATTERY PACK"
                                 value={`${activeAstronaut.diagnostics.batteryPercent}%`}
                                 percent={activeAstronaut.diagnostics.batteryPercent}
                                 color="bg-sky-400"
@@ -1257,34 +1113,33 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         </div>
                     </div>
 
-                    {/* Mission Incident Response Log */}
-                    <div className="border border-[#1a4b6c] bg-[#06121e]/90 p-3.5 flex-1 flex flex-col">
-                        <div className="flex items-center justify-between border-b border-[#1a4b6c] pb-2 mb-3">
-                            <div className="flex items-center gap-2">
-                                <ClipboardList className="w-4 h-4 text-[#5cdbdf]" />
-                                <h2 className="text-xs font-bold tracking-wider text-white">RESPONSE LOG & EVENTS</h2>
+                    {/* Recent Incident Events Feed */}
+                    <div className="rounded-xl border border-[#132c4a] bg-[#06121e]/95 p-3 shadow-lg flex-1 flex flex-col">
+                        <div className="flex items-center justify-between border-b border-[#132c4a] pb-2 mb-2">
+                            <div className="flex items-center gap-1.5">
+                                <ClipboardList className="w-3.5 h-3.5 text-[#5cdbdf]" />
+                                <h2 className="text-xs font-bold tracking-wider text-white">EVENT LOGS</h2>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsLogsModalOpen(true)}
-                                className="text-[10px] text-[#5cdbdf] hover:underline cursor-pointer flex items-center gap-1"
+                                className="text-[10px] text-cyan-400 hover:underline cursor-pointer flex items-center gap-0.5"
                             >
-                                <span>Full Archive</span>
+                                <span>Archive</span>
                                 <ArrowUpRight className="w-3 h-3" />
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs border-l border-[#1a4b6c]/80 pl-3 relative max-h-[300px]">
-                            {activeAstronaut.logs.map((item, i) => (
-                                <div key={item.id || i} className="relative group">
-                                    <div className="absolute -left-[17px] top-1.5 w-2 h-2 rounded-full bg-[#5cdbdf] group-hover:scale-125 transition-transform shadow-[0_0_6px_rgba(92,219,223,0.8)]"></div>
-                                    <div className="text-white font-bold tracking-wide flex items-center justify-between text-[11px]">
-                                        <span>{item.timestamp} - {item.title}</span>
-                                        <span className="text-[9px] px-1 py-0.2 rounded border border-emerald-800 bg-emerald-950/60 text-emerald-400">
-                                            {item.status || 'LOGGED'}
+                        <div className="flex-1 overflow-y-auto space-y-2 text-xs pr-1 max-h-[140px]">
+                            {activeAstronaut.logs.slice(0, 4).map((item, i) => (
+                                <div key={item.id || i} className="p-1.5 rounded bg-[#0a1f2e]/60 border border-[#132c4a] text-[11px] space-y-0.5">
+                                    <div className="text-white font-bold flex items-center justify-between">
+                                        <span className="truncate">{item.timestamp} - {item.title}</span>
+                                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-950/70 text-emerald-400 border border-emerald-800 shrink-0">
+                                            {item.status || 'OK'}
                                         </span>
                                     </div>
-                                    <div className="text-slate-400 text-[10px] mt-0.5">{item.action}</div>
+                                    <div className="text-slate-400 text-[10px] truncate">{item.action}</div>
                                 </div>
                             ))}
                         </div>
@@ -1326,7 +1181,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             heartRate: {
                                 ...profile.vitals.heartRate,
                                 numericValue: data.heartRate || profile.vitals.heartRate.numericValue,
-                                value: `Heart Rate: ${data.heartRate || profile.vitals.heartRate.numericValue} bpm`,
+                                value: `${data.heartRate || profile.vitals.heartRate.numericValue} bpm`,
                             },
                             spO2: {
                                 ...profile.vitals.spO2,
@@ -1398,7 +1253,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                 onClose={() => setIsBiometricsModalOpen(false)}
                 astronaut={activeAstronaut}
                 onRecalibrate={() => {
-                    handleAddManualLog('Biosensors Recalibrated', '[DIAGNOSTIC] Galvanic skin sensors and optical PPG recalibrated');
+                    handleAddManualLog('Biosensors Recalibrated', '[DIAGNOSTIC] Galvanic skin sensors recalibrated');
                 }}
             />
 
@@ -1426,26 +1281,32 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
 }
 
 // Sub-components for repeatable UI elements
-function VitalCard({ title, value, status, color, valueColor, type, baseline, onClick }: any) {
+function VitalCard({ title, value, status, color, valueColor, type, isPrimary, baseline, onClick }: any) {
     const textColor = valueColor || color;
     return (
         <div
             onClick={onClick}
-            className="flex flex-col gap-1.5 p-2.5 border border-[#1a4b6c]/80 bg-[#0a1f2e] hover:border-[#5cdbdf] transition-all cursor-pointer group shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+            className={`rounded-lg p-2.5 border transition-all cursor-pointer group shadow-sm flex flex-col justify-between ${
+                isPrimary
+                    ? 'border-[#1a4b6c] bg-[#0a1f2e] hover:border-[#5cdbdf]'
+                    : 'border-[#132c4a] bg-[#081325] hover:border-[#1a4b6c]'
+            }`}
         >
             <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-300 font-bold group-hover:text-white transition-colors tracking-wider">{title}</span>
+                <span className="text-slate-300 font-bold group-hover:text-white transition-colors tracking-wide text-[11px]">{title}</span>
                 <span style={{ color: textColor }} className="font-bold text-xs tracking-wider">
                     {value} {status && <span className="text-[10px] font-normal">{status}</span>}
                 </span>
             </div>
 
-            <div className="relative h-11 w-full border border-[#1a4b6c]/60 bg-[#06121e] overflow-hidden group-hover:border-[#5cdbdf]/80 transition-colors">
+            <div className={`relative w-full rounded overflow-hidden my-1.5 transition-colors border ${
+                isPrimary ? 'h-10 bg-[#040d18] border-[#132c4a]' : 'h-8 bg-[#040d18] border-[#132c4a]'
+            }`}>
                 <div
-                    className="absolute inset-0"
+                    className="absolute inset-0 opacity-20"
                     style={{
-                        backgroundImage: 'linear-gradient(to right, #1a4b6c22 1px, transparent 1px), linear-gradient(to bottom, #1a4b6c22 1px, transparent 1px)',
-                        backgroundSize: '10px 10px',
+                        backgroundImage: 'linear-gradient(to right, #5cdbdf 1px, transparent 1px), linear-gradient(to bottom, #5cdbdf 1px, transparent 1px)',
+                        backgroundSize: '12px 12px',
                     }}
                 />
                 <GraphPath type={type} color={color} />
@@ -1454,7 +1315,7 @@ function VitalCard({ title, value, status, color, valueColor, type, baseline, on
             {baseline && (
                 <div className="text-[9px] text-slate-500 font-mono tracking-wider flex justify-between">
                     <span>{baseline}</span>
-                    <span className="text-[#5cdbdf] opacity-0 group-hover:opacity-100 transition-opacity">EXPAND ↗</span>
+                    <span className="text-[#5cdbdf] opacity-0 group-hover:opacity-100 transition-opacity">DETAIL ↗</span>
                 </div>
             )}
         </div>
@@ -1464,11 +1325,11 @@ function VitalCard({ title, value, status, color, valueColor, type, baseline, on
 function GraphPath({ type, color }: { type: string; color: string }) {
     let d = '';
     if (type === 'ecg') {
-        d = 'M0,20 L10,20 L15,5 L20,35 L25,20 L40,20 L45,10 L50,30 L55,20 L70,20 L75,5 L80,35 L85,20 L100,20';
+        d = 'M0,20 L12,20 L16,6 L22,34 L26,20 L40,20 L44,12 L48,28 L52,20 L68,20 L72,6 L78,34 L82,20 L100,20';
     } else if (type === 'sine') {
-        d = 'M0,20 Q12.5,5 25,20 T50,20 T75,20 T100,20';
+        d = 'M0,20 Q12.5,6 25,20 T50,20 T75,20 T100,20';
     } else if (type === 'slow-sine') {
-        d = 'M0,20 Q25,0 50,20 T100,20';
+        d = 'M0,20 Q25,4 50,20 T100,20';
     } else {
         d = 'M0,20 L100,20'; // flatline
     }
@@ -1481,7 +1342,7 @@ function GraphPath({ type, color }: { type: string; color: string }) {
                 stroke={color}
                 strokeWidth="1.5"
                 vectorEffect="non-scaling-stroke"
-                className="drop-shadow-md"
+                className="drop-shadow-sm"
             />
         </svg>
     );
@@ -1490,13 +1351,12 @@ function GraphPath({ type, color }: { type: string; color: string }) {
 function ProgressBar({ label, value, percent, color, onClick }: any) {
     return (
         <div onClick={onClick} className="text-xs cursor-pointer group space-y-1">
-            <div className="flex justify-between items-center text-[11px]">
-                <span className="text-slate-300 group-hover:text-white transition-colors">{label}</span>
+            <div className="flex justify-between items-center text-[10px]">
+                <span className="text-slate-400 group-hover:text-white transition-colors">{label}</span>
                 <span className="text-white font-mono font-bold">{value}</span>
             </div>
-            <div className="h-2.5 w-full bg-[#030b14] border border-[#1a4b6c] group-hover:border-[#5cdbdf] relative overflow-hidden flex transition-colors">
-                <div className={`${color} h-full transition-all duration-500`} style={{ width: `${percent}%` }} />
-                <div className="absolute top-0 bottom-0 w-2 bg-white/30" style={{ left: `${percent}%` }} />
+            <div className="h-2 w-full rounded bg-[#030b14] border border-[#132c4a] group-hover:border-[#5cdbdf] relative overflow-hidden flex transition-colors">
+                <div className={`${color} h-full transition-all duration-500 rounded-sm`} style={{ width: `${percent}%` }} />
             </div>
         </div>
     );
