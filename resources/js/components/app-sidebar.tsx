@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Database, FolderGit2, LayoutGrid, Shield, Sparkles } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -18,22 +18,22 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Mission HUD',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Bio-Dataset Archive',
+        href: '/dataset',
+        icon: Database,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'NASA Directives (HRP)',
+        href: 'https://www.nasa.gov/hrp',
+        icon: Shield,
     },
 ];
 

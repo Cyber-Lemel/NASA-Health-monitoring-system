@@ -81,11 +81,14 @@ Route::get('/flare-demo', function () {
     throw new \Exception('Flare / Ignition Error Display Test: Telemetry and database error tracking is active.');
 });
 
-// <-- ADD YOUR NEW ROUTE HERE -->
-Route::get('/dataset', [DatasetController::class, 'index'])->name('dataset.index');
-Route::post('/api/dataset/import', [DatasetController::class, 'import'])->name('dataset.import');
+// NASA AI Chatbot endpoint (accessible across the entire system)
+Route::post('/api/ai/chat', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('ai.chat');
 
+// Authenticated & verified routes (Kaggle Dataset protected from public access)
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dataset', [DatasetController::class, 'index'])->name('dataset.index');
+    Route::post('/api/dataset/import', [DatasetController::class, 'import'])->name('dataset.import');
+
     Route::get('dashboard', function () {
         $records = \App\Models\DatasetRecord::all();
         return inertia('dashboard', [

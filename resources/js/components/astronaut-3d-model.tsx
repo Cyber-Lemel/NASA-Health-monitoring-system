@@ -605,7 +605,7 @@ export default function Astronaut3DModel({
             <div className="relative z-20 p-3 flex items-center justify-between pointer-events-auto">
                 <div className="flex items-center gap-2 overflow-hidden">
                     <div className="w-2 h-2 rounded-full bg-[#5cdbdf] animate-ping shrink-0" />
-                    <span className="text-[11px] font-bold tracking-widest text-slate-200 uppercase truncate max-w-[200px]" title={astronautName}>
+                    <span className="text-[11px] font-bold tracking-widest text-slate-200 uppercase truncate" title={astronautName}>
                         3D SKELETON • {astronautName}
                     </span>
                     <span className="text-[9px] px-1.5 py-0.5 border border-cyan-500/40 bg-cyan-950/60 text-cyan-300 shrink-0">

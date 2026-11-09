@@ -7,6 +7,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import NasaChatbot from '@/components/nasa-chatbot';
 import './echo';
 
 const appName = import.meta.env.VITE_APP_NAME || 'NASA Health Monitoring System';
@@ -17,19 +18,19 @@ void createInertiaApp({
         const pages = import.meta.glob('./pages/**/*.tsx', { eager: true });
         const page = pages[`./pages/${name}.tsx`] as any;
 
-        if (page?.default && page.default.layout === undefined) {
-            if (name === 'welcome') {
-                page.default.layout = null;
-            } else if (name.startsWith('auth/')) {
-                page.default.layout = (children: React.ReactNode) => <AuthLayout>{children}</AuthLayout>;
-            } else if (name.startsWith('settings/')) {
-                page.default.layout = (children: React.ReactNode) => (
-                    <AppLayout>
-                        <SettingsLayout>{children}</SettingsLayout>
-                    </AppLayout>
-                );
-            } else {
-                page.default.layout = (children: React.ReactNode) => <AppLayout>{children}</AppLayout>;
+        if (page?.default) {
+            if (name === 'welcome' || name.startsWith('auth/') || name === 'Dataset' || name === 'dashboard') {
+                page.default.layout = (children: React.ReactNode) => children;
+            } else if (page.default.layout === undefined) {
+                if (name.startsWith('settings/')) {
+                    page.default.layout = (children: React.ReactNode) => (
+                        <AppLayout>
+                            <SettingsLayout>{children}</SettingsLayout>
+                        </AppLayout>
+                    );
+                } else {
+                    page.default.layout = (children: React.ReactNode) => <AppLayout>{children}</AppLayout>;
+                }
             }
         }
 
@@ -41,6 +42,7 @@ void createInertiaApp({
         root.render(
             <TooltipProvider delayDuration={0}>
                 <App {...props} />
+                <NasaChatbot />
                 <Toaster />
             </TooltipProvider>
         );
