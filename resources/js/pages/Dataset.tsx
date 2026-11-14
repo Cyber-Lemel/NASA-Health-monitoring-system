@@ -27,7 +27,6 @@ import {
     CheckCircle2,
     AlertTriangle,
     Eye,
-    LogOut,
     Radio,
     Upload,
     Check,
@@ -37,7 +36,6 @@ import {
 import NasaLogo from '@/components/nasa-logo';
 import TelemetryImportModal from '@/components/telemetry-import-modal';
 import type { ParsedImportPayload } from '@/types/astronaut';
-import { logout } from '@/routes';
 import { toast } from 'sonner';
 
 export interface DatasetRecordItem {
@@ -746,7 +744,7 @@ export default function Dataset({ records = [] }: DatasetProps) {
                                 </button>
 
                                 <Link
-                                    href="/dashboard"
+                                    href="/"
                                     className="border border-[#1a4b6c] bg-[#0a1f2e] text-[#5cdbdf] px-3.5 py-2 text-xs tracking-widest uppercase hover:bg-[#0b3d91]/30 hover:border-[#5cdbdf] hover:text-white transition-all flex items-center gap-1.5 font-bold shadow-[0_0_10px_rgba(92,219,223,0.1)]"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" />
@@ -772,18 +770,6 @@ export default function Dataset({ records = [] }: DatasetProps) {
                                     <FileCode className="w-3.5 h-3.5 text-amber-400" />
                                     <span>JSON</span>
                                 </button>
-
-                                <Link
-                                    href={logout()}
-                                    method="post"
-                                    as="button"
-                                    type="button"
-                                    className="border border-red-900/60 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-500 px-2.5 py-2 text-xs tracking-wider uppercase transition-all flex items-center gap-1 cursor-pointer"
-                                    title="Sign out"
-                                >
-                                    <LogOut className="w-3.5 h-3.5" />
-                                    <span>EXIT</span>
-                                </Link>
                             </div>
                         </div>
                     </header>
@@ -1246,7 +1232,7 @@ export default function Dataset({ records = [] }: DatasetProps) {
                                                             </button>
 
                                                             <Link
-                                                                href="/dashboard"
+                                                                href="/"
                                                                 className="p-1.5 border border-[#1a4b6c] bg-[#0a1f2e] text-slate-400 hover:text-white hover:border-[#5cdbdf] transition-all"
                                                                 title="Open in Mission HUD"
                                                             >
@@ -1857,7 +1843,7 @@ export default function Dataset({ records = [] }: DatasetProps) {
                                     CLOSE DOSSIER
                                 </button>
                                 <Link
-                                    href="/dashboard"
+                                    href="/"
                                     className="inline-flex items-center gap-2 px-5 py-2 border border-[#5cdbdf] bg-[#5cdbdf] text-slate-950 font-bold hover:bg-cyan-300 transition-all shadow-[0_0_15px_rgba(92,219,223,0.3)] tracking-wider"
                                 >
                                     <span>OPEN IN MISSION HUD</span>

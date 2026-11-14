@@ -5,11 +5,10 @@ import {
     CheckSquare, Square, ChevronDown, Check, User, Activity,
     Database, Search, Sparkles, RefreshCw, Radio, Zap,
     Play, Pause, Wind, Shield, Settings, ClipboardList, Send, X,
-    LogOut, Clock, Heart, Volume2, VolumeX, Users, Layers, Expand,
+    Clock, Heart, Volume2, VolumeX, Users, Layers, Expand,
     CheckCircle2, ArrowUpRight, ArrowLeft
 } from 'lucide-react';
 import NasaLogo from '@/components/nasa-logo';
-import { logout } from '@/routes';
 import Astronaut3DModel from '@/components/astronaut-3d-model';
 import TelemetryImportModal from '@/components/telemetry-import-modal';
 import TelemetryExportModal from '@/components/telemetry-export-modal';
@@ -830,6 +829,15 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                             <span className="hidden xl:inline">Logs</span>
                         </button>
 
+                        <Link
+                            href="/dataset"
+                            className="px-2 py-1 rounded text-[#5cdbdf] hover:text-white hover:bg-[#132c4a] transition-colors text-[11px] flex items-center gap-1 font-bold"
+                            title="Open Full Kaggle Spaceflight Physiological Dataset Archive"
+                        >
+                            <Database className="w-3 h-3 text-[#5cdbdf]" />
+                            <span className="hidden xl:inline">Dataset ({effectiveCrewList.length})</span>
+                        </Link>
+
                         <button
                             type="button"
                             onClick={() => setIsSettingsModalOpen(true)}
@@ -894,17 +902,6 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         >
                             <Radio className={`w-3.5 h-3.5 ${isAutoLiveStream ? 'animate-pulse text-emerald-400' : ''}`} />
                         </button>
-
-                        <Link
-                            href={logout()}
-                            method="post"
-                            as="button"
-                            type="button"
-                            className="p-1.5 rounded-lg border border-red-900/60 bg-red-950/40 text-red-400 hover:bg-red-600 hover:text-white transition-all cursor-pointer"
-                            title="Terminate Flight Surgeon Session"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                        </Link>
                     </div>
                 </div>
             </header>
@@ -1206,7 +1203,7 @@ export default function NasaHealthHud({ initialData }: { initialData?: any }) {
                         bio: {
                             ...profile.bio,
                             name: data.name || prev.bio.name,
-                            id: data.astronautId || prev.bio.id,
+                            id: String(data.astronautId || prev.bio.id),
                             age: data.age ?? profile.bio.age,
                             country: data.country || profile.bio.country,
                             missionDurationDays: data.missionDurationDays ?? profile.bio.missionDurationDays,

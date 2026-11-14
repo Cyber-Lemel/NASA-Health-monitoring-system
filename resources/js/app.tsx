@@ -4,9 +4,6 @@ import { createRoot } from 'react-dom/client';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
-import AppLayout from '@/layouts/app-layout';
-import AuthLayout from '@/layouts/auth-layout';
-import SettingsLayout from '@/layouts/settings/layout';
 import NasaChatbot from '@/components/nasa-chatbot';
 import './echo';
 
@@ -19,19 +16,7 @@ void createInertiaApp({
         const page = pages[`./pages/${name}.tsx`] as any;
 
         if (page?.default) {
-            if (name === 'welcome' || name.startsWith('auth/') || name === 'Dataset' || name === 'dashboard') {
-                page.default.layout = (children: React.ReactNode) => children;
-            } else if (page.default.layout === undefined) {
-                if (name.startsWith('settings/')) {
-                    page.default.layout = (children: React.ReactNode) => (
-                        <AppLayout>
-                            <SettingsLayout>{children}</SettingsLayout>
-                        </AppLayout>
-                    );
-                } else {
-                    page.default.layout = (children: React.ReactNode) => <AppLayout>{children}</AppLayout>;
-                }
-            }
+            page.default.layout = (children: React.ReactNode) => children;
         }
 
         return page;
